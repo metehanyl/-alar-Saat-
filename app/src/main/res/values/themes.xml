@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Theme.CalarSaat" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+        <item name="colorSecondary">@color/accent</item>
+        <item name="android:statusBarColor" tools:targetApi="21">@color/primary_dark</item>
+    </style>
+
+    <style name="Theme.CalarSaat.Ring" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:windowBackground">@color/ring_background</item>
+        <item name="android:statusBarColor" tools:targetApi="21">@color/ring_background</item>
+        <item name="android:windowFullscreen">false</item>
+    </style>
+
+    <style name="PinPadButton" parent="Widget.Material3.Button.TextButton">
+        <item name="android:layout_width">72dp</item>
+        <item name="android:layout_height">72dp</item>
+        <item name="android:layout_margin">6dp</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:background">@drawable/bg_pin_button</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+    </style>
+</resources>

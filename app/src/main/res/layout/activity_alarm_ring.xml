@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/ring_background"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:paddingTop="48dp"
+    android:paddingBottom="24dp">
+
+    <TextView
+        android:id="@+id/textRingTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/white"
+        android:textSize="56sp"
+        android:textStyle="bold"
+        tools:text="07:30" />
+
+    <TextView
+        android:id="@+id/textRingLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        tools:text="İş" />
+
+    <Space
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/ring_dismiss_hint"
+        android:textColor="@color/white" />
+
+    <TextView
+        android:id="@+id/textPinDots"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:letterSpacing="0.3"
+        android:minHeight="32dp"
+        android:textColor="@color/white"
+        android:textSize="28sp" />
+
+    <TextView
+        android:id="@+id/textRingError"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="@string/ring_pin_wrong"
+        android:textColor="@android:color/holo_orange_light"
+        android:visibility="invisible" />
+
+    <Space
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <GridLayout
+        android:id="@+id/gridPinPad"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:columnCount="3"
+        android:rowCount="4">
+
+        <Button android:id="@+id/button1" style="@style/PinPadButton" android:text="1" />
+        <Button android:id="@+id/button2" style="@style/PinPadButton" android:text="2" />
+        <Button android:id="@+id/button3" style="@style/PinPadButton" android:text="3" />
+        <Button android:id="@+id/button4" style="@style/PinPadButton" android:text="4" />
+        <Button android:id="@+id/button5" style="@style/PinPadButton" android:text="5" />
+        <Button android:id="@+id/button6" style="@style/PinPadButton" android:text="6" />
+        <Button android:id="@+id/button7" style="@style/PinPadButton" android:text="7" />
+        <Button android:id="@+id/button8" style="@style/PinPadButton" android:text="8" />
+        <Button android:id="@+id/button9" style="@style/PinPadButton" android:text="9" />
+        <View android:layout_width="72dp" android:layout_height="72dp" />
+        <Button android:id="@+id/button0" style="@style/PinPadButton" android:text="0" />
+        <ImageButton
+            android:id="@+id/buttonBackspace"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_margin="6dp"
+            android:background="@drawable/bg_pin_button"
+            android:contentDescription="@string/action_delete"
+            android:padding="20dp"
+            android:src="@drawable/ic_backspace" />
+    </GridLayout>
+
+</LinearLayout>

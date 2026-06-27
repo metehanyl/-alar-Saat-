@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Çalar Saat</string>
+
+    <string name="notification_channel_name">Alarm</string>
+    <string name="notification_channel_description">Çalar saat bildirimleri</string>
+    <string name="notification_alarm_text">Kapatmak için dokunun</string>
+    <string name="alarm_default_label">Alarm</string>
+
+    <string name="empty_alarms_title">Henüz alarm yok</string>
+    <string name="empty_alarms_subtitle">Eklemek için + tuşuna dokunun</string>
+    <string name="max_alarms_reached">En fazla %1$d alarm kurabilirsiniz</string>
+    <string name="action_settings">Ayarlar</string>
+    <string name="action_delete">Sil</string>
+    <string name="delete_confirm_message">Bu alarmı silmek istiyor musunuz?</string>
+    <string name="action_save">Kaydet</string>
+    <string name="action_cancel">Vazgeç</string>
+
+    <string name="label_hint">Etiket (örn. İş)</string>
+    <string name="repeat_title">Tekrar</string>
+    <string name="new_alarm_title">Yeni Alarm</string>
+    <string name="edit_alarm_title">Alarmı Düzenle</string>
+
+    <string name="pin_setup_required_title">PIN gerekli</string>
+    <string name="pin_setup_required_message">Alarmı kapatmak için önce bir PIN belirlemelisiniz.</string>
+    <string name="pin_setup_go">PIN Belirle</string>
+
+    <string name="settings_title">Ayarlar</string>
+    <string name="settings_pin_label">Alarmı kapatma PIN\'i</string>
+    <string name="settings_pin_hint">4-6 haneli PIN</string>
+    <string name="settings_pin_confirm_hint">PIN\'i tekrar girin</string>
+    <string name="settings_pin_save">PIN\'i Kaydet</string>
+    <string name="settings_pin_saved">PIN kaydedildi</string>
+    <string name="settings_pin_mismatch">PIN\'ler eşleşmiyor</string>
+    <string name="settings_pin_too_short">PIN en az 4 hane olmalı</string>
+
+    <string name="ring_dismiss_hint">Kapatmak için PIN\'i girin</string>
+    <string name="ring_pin_wrong">Yanlış PIN</string>
+    <string name="ring_dismiss_button">Kapat</string>
+</resources>
