@@ -114,7 +114,11 @@ class MainActivity : AppCompatActivity() {
     private fun observeSabahNamaziAlarms() {
         lifecycleScope.launch {
             dao.observeAutoSabahNamaziAlarms().collect { alarms ->
-                binding.textSabahTimes.text = alarms.joinToString(", ") { "%02d:%02d".format(it.hour, it.minute) }
+                binding.textSabahTimes.text = if (alarms.isEmpty()) {
+                    getString(R.string.sabah_namazi_no_alarms_yet)
+                } else {
+                    alarms.joinToString(", ") { "%02d:%02d".format(it.hour, it.minute) }
+                }
             }
         }
     }

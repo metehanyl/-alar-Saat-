@@ -51,6 +51,7 @@
     <string name="sabah_namazi_title">Sabah Namazı</string>
     <string name="sabah_namazi_subtitle">İmsak vaktine göre otomatik 3 alarm kurar</string>
     <string name="sabah_namazi_enabled_message">Sabah namazı alarmları kuruldu: %1$s</string>
+    <string name="sabah_namazi_no_alarms_yet">Henüz alarm kurulmadı. Açmak için yukarıdaki anahtarı kullanın.</string>
 
     <string name="alarm_groups_title">Alarm Grupları</string>
     <string name="new_group_title">Yeni Grup</string>

@@ -14,7 +14,7 @@ interface AlarmDao {
     @Query("SELECT * FROM alarms ORDER BY hour, minute")
     fun observeAll(): Flow<List<AlarmEntity>>
 
-    @Query("SELECT * FROM alarms WHERE groupId IS NULL ORDER BY hour, minute")
+    @Query("SELECT * FROM alarms WHERE groupId IS NULL AND isAutoSabahNamazi = 0 ORDER BY hour, minute")
     fun observeUngrouped(): Flow<List<AlarmEntity>>
 
     @Query("SELECT * FROM alarms ORDER BY hour, minute")
