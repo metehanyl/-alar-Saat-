@@ -23,6 +23,9 @@ interface AlarmDao {
     @Query("SELECT COUNT(*) FROM alarms")
     suspend fun count(): Int
 
+    @Query("SELECT * FROM alarms WHERE isAutoSabahNamazi = 1")
+    suspend fun getAutoSabahNamaziAlarms(): List<AlarmEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(alarm: AlarmEntity): Long
 

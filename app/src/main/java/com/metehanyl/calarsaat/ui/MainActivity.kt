@@ -16,6 +16,8 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
 import com.metehanyl.calarsaat.R
 import com.metehanyl.calarsaat.alarm.AlarmScheduler
+import com.metehanyl.calarsaat.alarm.SabahNamaziManager
+import com.metehanyl.calarsaat.alarm.SabahNamaziResult
 import com.metehanyl.calarsaat.data.AlarmDatabase
 import com.metehanyl.calarsaat.data.AlarmEntity
 import com.metehanyl.calarsaat.data.PrefsManager
@@ -29,6 +31,7 @@ class MainActivity : AppCompatActivity() {
     private val dao by lazy { AlarmDatabase.getInstance(this).alarmDao() }
     private val scheduler by lazy { AlarmScheduler(this) }
     private val prefs by lazy { PrefsManager(this) }
+    private val sabahNamaziManager by lazy { SabahNamaziManager(this) }
 
     private val notificationPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
@@ -60,9 +63,53 @@ class MainActivity : AppCompatActivity() {
 
         binding.fabAdd.setOnClickListener { onAddAlarmClicked() }
 
+        binding.switchSabahNamazi.isChecked = prefs.isSabahNamaziEnabled()
+        binding.switchSabahNamazi.setOnCheckedChangeListener { _, checked ->
+            onSabahNamaziToggled(checked)
+        }
+
         requestNotificationPermissionIfNeeded()
         requestBatteryOptimizationExemptionIfNeeded()
         observeAlarms()
+    }
+
+    private fun onSabahNamaziToggled(enabled: Boolean) {
+        if (enabled) {
+            lifecycleScope.launch {
+                when (val result = sabahNamaziManager.refresh()) {
+                    is SabahNamaziResult.Success -> {
+                        prefs.setSabahNamaziEnabled(true)
+                        sabahNamaziManager.scheduleDailyRefresh()
+                        val (h1, m1) = result.times[0]
+                        val (h2, m2) = result.times[1]
+                        val (h3, m3) = result.times[2]
+                        Snackbar.make(
+                            binding.root,
+                            getString(R.string.sabah_namazi_enabled_message, h1, m1, h2, m2, h3, m3),
+                            Snackbar.LENGTH_LONG
+                        ).show()
+                    }
+                    SabahNamaziResult.NoData -> {
+                        binding.switchSabahNamazi.setOnCheckedChangeListener(null)
+                        binding.switchSabahNamazi.isChecked = false
+                        binding.switchSabahNamazi.setOnCheckedChangeListener { _, checked ->
+                            onSabahNamaziToggled(checked)
+                        }
+                        Snackbar.make(
+                            binding.root,
+                            R.string.sabah_namazi_no_data,
+                            Snackbar.LENGTH_LONG
+                        ).show()
+                    }
+                }
+            }
+        } else {
+            prefs.setSabahNamaziEnabled(false)
+            lifecycleScope.launch {
+                sabahNamaziManager.cancelAutoAlarms()
+                sabahNamaziManager.cancelDailyRefresh()
+            }
+        }
     }
 
     private fun observeAlarms() {

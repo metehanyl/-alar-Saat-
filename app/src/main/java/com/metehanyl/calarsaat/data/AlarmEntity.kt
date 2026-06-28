@@ -16,7 +16,9 @@ data class AlarmEntity(
     // Id of the AlarmMelody (see AlarmSounds) used when this alarm rings.
     val soundId: Int = 0,
     // epoch millis of the next time this alarm is scheduled to fire, used to recompute on boot
-    val nextTriggerAtMillis: Long = 0L
+    val nextTriggerAtMillis: Long = 0L,
+    // True for the 3 auto-generated Sabah Namazı alarms, so the daily refresh can find/replace them.
+    val isAutoSabahNamazi: Boolean = false
 ) {
     fun repeatDaysSet(): Set<Int> =
         if (repeatDays.isBlank()) emptySet()

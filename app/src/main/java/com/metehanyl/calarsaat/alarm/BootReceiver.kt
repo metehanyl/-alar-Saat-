@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import com.metehanyl.calarsaat.data.AlarmDatabase
+import com.metehanyl.calarsaat.data.PrefsManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -24,6 +25,9 @@ class BootReceiver : BroadcastReceiver() {
                 for (alarm in enabledAlarms) {
                     val nextTrigger = scheduler.schedule(alarm)
                     dao.update(alarm.copy(nextTriggerAtMillis = nextTrigger))
+                }
+                if (PrefsManager(context).isSabahNamaziEnabled()) {
+                    SabahNamaziManager(context).scheduleDailyRefresh()
                 }
             } finally {
                 pendingResult.finish()

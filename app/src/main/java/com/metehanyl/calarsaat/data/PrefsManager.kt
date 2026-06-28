@@ -23,7 +23,14 @@ class PrefsManager(context: Context) {
         return digest.joinToString("") { "%02x".format(it) }
     }
 
+    fun isSabahNamaziEnabled(): Boolean = prefs.getBoolean(KEY_SABAH_NAMAZI_ENABLED, false)
+
+    fun setSabahNamaziEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_SABAH_NAMAZI_ENABLED, enabled).apply()
+    }
+
     companion object {
         private const val KEY_PIN_HASH = "pin_hash"
+        private const val KEY_SABAH_NAMAZI_ENABLED = "sabah_namazi_enabled"
     }
 }
