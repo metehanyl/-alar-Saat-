@@ -12,6 +12,7 @@ const val EXTRA_ALARM_LABEL = "extra_alarm_label"
 const val EXTRA_ALARM_SOUND_ID = "extra_alarm_sound_id"
 const val EXTRA_ALARM_REQUIRE_PIN = "extra_alarm_require_pin"
 const val EXTRA_ALARM_PIN_HASH = "extra_alarm_pin_hash"
+const val EXTRA_IS_SNOOZE = "extra_is_snooze"
 
 class AlarmScheduler(private val context: Context) {
 
@@ -34,6 +35,41 @@ class AlarmScheduler(private val context: Context) {
     fun cancel(alarm: AlarmEntity) {
         alarmManager.cancel(buildPendingIntent(alarm))
     }
+
+    /** Reschedules a ringing alarm to fire again after [minutes], independent of its normal repeat schedule. */
+    fun scheduleSnooze(
+        alarmId: Int,
+        label: String,
+        soundId: Int,
+        requirePin: Boolean,
+        pinHash: String?,
+        minutes: Int = SNOOZE_MINUTES
+    ): Long {
+        val triggerAt = System.currentTimeMillis() + minutes * 60_000L
+        val requestCode = snoozeRequestCode(alarmId)
+
+        val intent = Intent(context, AlarmReceiver::class.java).apply {
+            putExtra(EXTRA_ALARM_ID, alarmId)
+            putExtra(EXTRA_ALARM_LABEL, label)
+            putExtra(EXTRA_ALARM_SOUND_ID, soundId)
+            putExtra(EXTRA_ALARM_REQUIRE_PIN, requirePin)
+            putExtra(EXTRA_ALARM_PIN_HASH, pinHash)
+            putExtra(EXTRA_IS_SNOOZE, true)
+        }
+        val pendingIntent = PendingIntent.getBroadcast(
+            context, requestCode, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        val showIntent = PendingIntent.getActivity(
+            context, requestCode, Intent(context, com.metehanyl.calarsaat.ui.MainActivity::class.java),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        alarmManager.setAlarmClock(AlarmManager.AlarmClockInfo(triggerAt, showIntent), pendingIntent)
+        return triggerAt
+    }
+
+    private fun snoozeRequestCode(alarmId: Int) = alarmId + SNOOZE_REQUEST_CODE_OFFSET
 
     private fun buildPendingIntent(alarm: AlarmEntity): PendingIntent {
         val intent = Intent(context, AlarmReceiver::class.java).apply {
@@ -79,5 +115,10 @@ class AlarmScheduler(private val context: Context) {
         // Fallback (shouldn't happen): one week from candidate
         candidate.add(Calendar.DAY_OF_YEAR, 7)
         return candidate.timeInMillis
+    }
+
+    companion object {
+        const val SNOOZE_MINUTES = 5
+        private const val SNOOZE_REQUEST_CODE_OFFSET = 1_000_000
     }
 }

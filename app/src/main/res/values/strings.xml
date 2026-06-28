@@ -34,6 +34,8 @@
     <string name="ring_dismiss_hint">Kapatmak için PIN\'i girin</string>
     <string name="ring_pin_wrong">Yanlış PIN</string>
     <string name="ring_dismiss_button">Kapat</string>
+    <string name="ring_swipe_dismiss_hint">Kapat →</string>
+    <string name="ring_swipe_snooze_hint">← Ertele (5 dk)</string>
 
     <string name="melody_title">Alarm Melodisi</string>
     <string name="melody_classic">Klasik Çalar Saat</string>

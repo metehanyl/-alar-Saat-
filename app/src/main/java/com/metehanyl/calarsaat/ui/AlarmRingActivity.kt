@@ -2,17 +2,23 @@ package com.metehanyl.calarsaat.ui
 
 import android.os.Build
 import android.os.Bundle
+import android.view.GestureDetector
+import android.view.MotionEvent
 import android.view.WindowManager
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import com.metehanyl.calarsaat.R
 import com.metehanyl.calarsaat.alarm.AlarmRingingService
+import com.metehanyl.calarsaat.alarm.AlarmScheduler
+import com.metehanyl.calarsaat.alarm.EXTRA_ALARM_ID
 import com.metehanyl.calarsaat.alarm.EXTRA_ALARM_LABEL
 import com.metehanyl.calarsaat.alarm.EXTRA_ALARM_PIN_HASH
 import com.metehanyl.calarsaat.alarm.EXTRA_ALARM_REQUIRE_PIN
+import com.metehanyl.calarsaat.alarm.EXTRA_ALARM_SOUND_ID
 import com.metehanyl.calarsaat.data.PinHasher
 import com.metehanyl.calarsaat.databinding.ActivityAlarmRingBinding
 import java.util.Calendar
+import kotlin.math.abs
 
 class AlarmRingActivity : AppCompatActivity() {
 
@@ -20,6 +26,33 @@ class AlarmRingActivity : AppCompatActivity() {
     private val enteredPin = StringBuilder()
     private val maxPinLength = 6
     private var pinHash: String? = null
+    private var alarmId = -1
+    private var soundId = 0
+    private var requirePin = false
+
+    private val gestureDetector by lazy {
+        GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
+            override fun onDown(e: MotionEvent): Boolean = true
+
+            override fun onFling(
+                e1: MotionEvent?,
+                e2: MotionEvent,
+                velocityX: Float,
+                velocityY: Float
+            ): Boolean {
+                if (e1 == null) return false
+                val deltaX = e2.x - e1.x
+                val deltaY = e2.y - e1.y
+                if (abs(deltaX) <= abs(deltaY) || abs(deltaX) < SWIPE_DISTANCE_THRESHOLD ||
+                    abs(velocityX) < SWIPE_VELOCITY_THRESHOLD
+                ) {
+                    return false
+                }
+                if (deltaX > 0) onSwipeRight() else onSwipeLeft()
+                return true
+            }
+        })
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,13 +64,16 @@ class AlarmRingActivity : AppCompatActivity() {
             override fun handleOnBackPressed() { /* block back press while ringing */ }
         })
 
+        alarmId = intent.getIntExtra(EXTRA_ALARM_ID, -1)
+        soundId = intent.getIntExtra(EXTRA_ALARM_SOUND_ID, 0)
+
         val label = intent.getStringExtra(EXTRA_ALARM_LABEL).orEmpty()
         binding.textRingLabel.text = label
         binding.textRingLabel.visibility =
             if (label.isBlank()) android.view.View.GONE else android.view.View.VISIBLE
         binding.textRingTime.text = currentTimeText()
 
-        val requirePin = intent.getBooleanExtra(EXTRA_ALARM_REQUIRE_PIN, false)
+        requirePin = intent.getBooleanExtra(EXTRA_ALARM_REQUIRE_PIN, false)
         pinHash = intent.getStringExtra(EXTRA_ALARM_PIN_HASH)
         if (requirePin && pinHash != null) {
             binding.layoutPinSection.visibility = android.view.View.VISIBLE
@@ -47,6 +83,13 @@ class AlarmRingActivity : AppCompatActivity() {
             binding.layoutPinSection.visibility = android.view.View.GONE
             binding.buttonDismissPlain.visibility = android.view.View.VISIBLE
             binding.buttonDismissPlain.setOnClickListener { dismissAlarm() }
+        }
+        binding.textSwipeDismissHint.visibility =
+            if (requirePin && pinHash != null) android.view.View.GONE else android.view.View.VISIBLE
+
+        binding.root.setOnTouchListener { _, event ->
+            gestureDetector.onTouchEvent(event)
+            true
         }
     }
 
@@ -118,8 +161,30 @@ class AlarmRingActivity : AppCompatActivity() {
         binding.textPinDots.text = "● ".repeat(enteredPin.length).trim()
     }
 
+    private fun onSwipeRight() {
+        if (!requirePin) dismissAlarm()
+    }
+
+    private fun onSwipeLeft() {
+        snoozeAlarm()
+    }
+
     private fun dismissAlarm() {
         AlarmRingingService.stop(this)
+        finish()
+    }
+
+    private fun snoozeAlarm() {
+        AlarmRingingService.stop(this)
+        if (alarmId != -1) {
+            AlarmScheduler(this).scheduleSnooze(
+                alarmId = alarmId,
+                label = intent.getStringExtra(EXTRA_ALARM_LABEL).orEmpty(),
+                soundId = soundId,
+                requirePin = requirePin,
+                pinHash = pinHash
+            )
+        }
         finish()
     }
 
@@ -128,5 +193,10 @@ class AlarmRingActivity : AppCompatActivity() {
         if (isFinishing) {
             AlarmRingingService.stop(this)
         }
+    }
+
+    companion object {
+        private const val SWIPE_DISTANCE_THRESHOLD = 120
+        private const val SWIPE_VELOCITY_THRESHOLD = 150
     }
 }

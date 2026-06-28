@@ -27,6 +27,35 @@
         android:textSize="20sp"
         tools:text="İş" />
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:orientation="horizontal"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp">
+
+        <TextView
+            android:id="@+id/textSwipeSnoozeHint"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="start"
+            android:text="@string/ring_swipe_snooze_hint"
+            android:textColor="@color/white"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/textSwipeDismissHint"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="end"
+            android:text="@string/ring_swipe_dismiss_hint"
+            android:textColor="@color/white"
+            android:textSize="14sp" />
+    </LinearLayout>
+
     <Space
         android:layout_width="0dp"
         android:layout_height="0dp"

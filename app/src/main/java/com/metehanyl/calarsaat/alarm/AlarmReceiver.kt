@@ -18,6 +18,7 @@ class AlarmReceiver : BroadcastReceiver() {
         val soundId = intent.getIntExtra(EXTRA_ALARM_SOUND_ID, 0)
         val requirePin = intent.getBooleanExtra(EXTRA_ALARM_REQUIRE_PIN, false)
         val pinHash = intent.getStringExtra(EXTRA_ALARM_PIN_HASH)
+        val isSnooze = intent.getBooleanExtra(EXTRA_IS_SNOOZE, false)
         if (alarmId == -1) return
 
         val ringIntent = Intent(context, AlarmRingingService::class.java).apply {
@@ -28,6 +29,8 @@ class AlarmReceiver : BroadcastReceiver() {
             putExtra(EXTRA_ALARM_PIN_HASH, pinHash)
         }
         ContextCompat.startForegroundService(context, ringIntent)
+
+        if (isSnooze) return
 
         val pendingResult = goAsync()
         CoroutineScope(Dispatchers.IO).launch {
