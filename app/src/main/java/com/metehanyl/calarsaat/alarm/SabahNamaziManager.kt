@@ -43,6 +43,7 @@ class SabahNamaziManager(private val context: Context) {
         val offset = prefs.getSabahNamaziOffsetMinutes().coerceIn(0, 120)
         val requirePin = prefs.isSabahNamaziPinRequired()
         val pinHash = prefs.getSabahNamaziPinHash().takeIf { requirePin }
+        val volume = prefs.getSabahNamaziVolume()
 
         val times = mutableListOf<Pair<Int, Int>>()
         for (i in 0 until count) {
@@ -58,7 +59,8 @@ class SabahNamaziManager(private val context: Context) {
                 soundId = 0,
                 isAutoSabahNamazi = true,
                 requirePin = pinHash != null,
-                pinHash = pinHash
+                pinHash = pinHash,
+                volume = volume
             )
             val id = dao.insert(alarm)
             val saved = alarm.copy(id = id.toInt())

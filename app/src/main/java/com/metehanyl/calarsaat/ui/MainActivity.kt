@@ -101,11 +101,18 @@ class MainActivity : AppCompatActivity() {
 
         requestNotificationPermissionIfNeeded()
         requestBatteryOptimizationExemptionIfNeeded()
-        requestFullScreenIntentPermissionIfNeeded()
         observeAlarms()
         observeGroups()
         observeSabahNamaziAlarms()
         healSabahNamaziStateIfNeeded()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Re-checked on every resume (not just first launch) because the user may have
+        // dismissed the prompt without granting it, or reinstalled the app, which revokes
+        // this special access again on Android 14+ for sideloaded apps.
+        requestFullScreenIntentPermissionIfNeeded()
     }
 
     private fun healSabahNamaziStateIfNeeded() {
@@ -143,10 +150,21 @@ class MainActivity : AppCompatActivity() {
         val switchPin = view.findViewById<SwitchMaterial>(R.id.switchSabahPin)
         val layoutPin = view.findViewById<TextInputLayout>(R.id.layoutSabahPin)
         val editPin = view.findViewById<TextInputEditText>(R.id.editSabahPin)
+        val seekVolume = view.findViewById<android.widget.SeekBar>(R.id.seekSabahVolume)
+        val textVolumeValue = view.findViewById<android.widget.TextView>(R.id.textSabahVolumeValue)
 
         editCount.setText(prefs.getSabahNamaziAlarmCount().toString())
         editInterval.setText(prefs.getSabahNamaziIntervalMinutes().toString())
         editOffset.setText(prefs.getSabahNamaziOffsetMinutes().toString())
+        seekVolume.progress = prefs.getSabahNamaziVolume()
+        textVolumeValue.text = getString(R.string.volume_value_format, seekVolume.progress)
+        seekVolume.setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: android.widget.SeekBar, progress: Int, fromUser: Boolean) {
+                textVolumeValue.text = getString(R.string.volume_value_format, progress)
+            }
+            override fun onStartTrackingTouch(seekBar: android.widget.SeekBar) {}
+            override fun onStopTrackingTouch(seekBar: android.widget.SeekBar) {}
+        })
         switchPin.isChecked = prefs.isSabahNamaziPinRequired()
         layoutPin.visibility = if (switchPin.isChecked) View.VISIBLE else View.GONE
         switchPin.setOnCheckedChangeListener { _, checked ->
@@ -182,6 +200,7 @@ class MainActivity : AppCompatActivity() {
                 prefs.setSabahNamaziAlarmCount(count)
                 prefs.setSabahNamaziIntervalMinutes(interval)
                 prefs.setSabahNamaziOffsetMinutes(offset)
+                prefs.setSabahNamaziVolume(seekVolume.progress.coerceIn(1, 100))
                 prefs.setSabahNamaziPinRequired(requirePin)
                 if (requirePin) {
                     if (enteredPin.isNotEmpty()) prefs.setSabahNamaziPinHash(PinHasher.hash(enteredPin))

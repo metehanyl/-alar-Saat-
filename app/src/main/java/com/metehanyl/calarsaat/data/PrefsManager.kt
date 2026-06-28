@@ -53,6 +53,12 @@ class PrefsManager(context: Context) {
         prefs.edit().putString(KEY_SABAH_PIN_HASH, hash).apply()
     }
 
+    fun getSabahNamaziVolume(): Int = prefs.getInt(KEY_SABAH_VOLUME, DEFAULT_SABAH_VOLUME)
+
+    fun setSabahNamaziVolume(volume: Int) {
+        prefs.edit().putInt(KEY_SABAH_VOLUME, volume).apply()
+    }
+
     companion object {
         private const val KEY_PIN_HASH = "pin_hash"
         private const val KEY_SABAH_NAMAZI_ENABLED = "sabah_namazi_enabled"
@@ -61,10 +67,12 @@ class PrefsManager(context: Context) {
         private const val KEY_SABAH_OFFSET = "sabah_namazi_offset"
         private const val KEY_SABAH_REQUIRE_PIN = "sabah_namazi_require_pin"
         private const val KEY_SABAH_PIN_HASH = "sabah_namazi_pin_hash"
+        private const val KEY_SABAH_VOLUME = "sabah_namazi_volume"
 
         // Default settings reproduce the original fixed behavior: imsak+10, +14, +18.
         const val DEFAULT_SABAH_COUNT = 3
         const val DEFAULT_SABAH_INTERVAL = 4
         const val DEFAULT_SABAH_OFFSET = 10
+        const val DEFAULT_SABAH_VOLUME = 100
     }
 }

@@ -4,6 +4,7 @@ import android.app.TimePickerDialog
 import android.os.Bundle
 import android.view.View
 import android.widget.RadioButton
+import android.widget.SeekBar
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -43,6 +44,7 @@ class GroupEditActivity : AppCompatActivity() {
 
         binding.toolbar.setNavigationOnClickListener { finish() }
         setupMelodyOptions()
+        setupVolumeSlider()
 
         adapter = GroupTimeAdapter(times) { position ->
             times.removeAt(position)
@@ -74,6 +76,9 @@ class GroupEditActivity : AppCompatActivity() {
                         binding.switchGroupRequirePin.isChecked = first.requirePin
                         binding.layoutGroupPin.visibility =
                             if (first.requirePin) View.VISIBLE else View.GONE
+                        binding.seekGroupVolume.progress = first.volume
+                        binding.textGroupVolumeValue.text =
+                            getString(R.string.volume_value_format, first.volume)
                     }
                 }
             }
@@ -104,6 +109,20 @@ class GroupEditActivity : AppCompatActivity() {
 
     private fun selectedSoundId(): Int =
         melodyButtons.entries.firstOrNull { it.value.isChecked }?.key ?: 0
+
+    private fun setupVolumeSlider() {
+        binding.textGroupVolumeValue.text =
+            getString(R.string.volume_value_format, binding.seekGroupVolume.progress)
+        binding.seekGroupVolume.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+                binding.textGroupVolumeValue.text = getString(R.string.volume_value_format, progress)
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar) {}
+        })
+    }
+
+    private fun selectedVolume(): Int = binding.seekGroupVolume.progress.coerceIn(1, 100)
 
     private fun onPreviewClicked() {
         if (previewPlaying) {
@@ -180,6 +199,7 @@ class GroupEditActivity : AppCompatActivity() {
             else -> existingPinHash
         }
         val soundId = selectedSoundId()
+        val volume = selectedVolume()
 
         lifecycleScope.launch {
             val existingInGroup = editingGroup?.let { dao.getByGroupId(it.id) } ?: emptyList()
@@ -213,7 +233,8 @@ class GroupEditActivity : AppCompatActivity() {
                     groupId = groupId,
                     soundId = soundId,
                     requirePin = requirePin,
-                    pinHash = pinHash
+                    pinHash = pinHash,
+                    volume = volume
                 )
                 val id = dao.insert(alarm)
                 val saved = alarm.copy(id = id.toInt())
