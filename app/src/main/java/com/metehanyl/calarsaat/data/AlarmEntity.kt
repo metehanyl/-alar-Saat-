@@ -18,7 +18,9 @@ data class AlarmEntity(
     // epoch millis of the next time this alarm is scheduled to fire, used to recompute on boot
     val nextTriggerAtMillis: Long = 0L,
     // True for the 3 auto-generated Sabah Namazı alarms, so the daily refresh can find/replace them.
-    val isAutoSabahNamazi: Boolean = false
+    val isAutoSabahNamazi: Boolean = false,
+    // Id of the AlarmGroupEntity this alarm belongs to, or null for a standalone alarm.
+    val groupId: Int? = null
 ) {
     fun repeatDaysSet(): Set<Int> =
         if (repeatDays.isBlank()) emptySet()

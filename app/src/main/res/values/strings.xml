@@ -54,4 +54,17 @@
     <string name="sabah_namazi_title">Sabah Namazı</string>
     <string name="sabah_namazi_subtitle">İmsak vaktine göre otomatik 3 alarm kurar</string>
     <string name="sabah_namazi_enabled_message">Sabah namazı alarmları kuruldu: %1$02d:%2$02d, %3$02d:%4$02d ve %5$02d:%6$02d</string>
+
+    <string name="alarm_groups_title">Alarm Grupları</string>
+    <string name="new_group_title">Yeni Grup</string>
+    <string name="edit_group_title">Grubu Düzenle</string>
+    <string name="group_name_hint">Grup adı (örn. İş Günleri)</string>
+    <string name="add_time_button">+ Saat Ekle</string>
+    <string name="group_no_times_hint">Henüz saat eklenmedi</string>
+    <string name="group_no_times_error">En az bir saat ekleyin</string>
+    <string name="group_name_required_error">Grup adı gerekli</string>
+    <string name="group_delete_button">Grubu Sil</string>
+    <string name="group_delete_confirm_message">Bu grubu ve içindeki tüm alarmları silmek istiyor musunuz?</string>
+    <string name="group_activate_button">Kur</string>
+    <string name="group_activated_message">%1$s grubu kuruldu</string>
 </resources>

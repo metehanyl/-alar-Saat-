@@ -22,13 +22,16 @@ import com.metehanyl.calarsaat.data.AlarmDatabase
 import com.metehanyl.calarsaat.data.AlarmEntity
 import com.metehanyl.calarsaat.data.PrefsManager
 import com.metehanyl.calarsaat.databinding.ActivityMainBinding
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var adapter: AlarmAdapter
+    private lateinit var groupAdapter: AlarmGroupAdapter
     private val dao by lazy { AlarmDatabase.getInstance(this).alarmDao() }
+    private val groupDao by lazy { AlarmDatabase.getInstance(this).alarmGroupDao() }
     private val scheduler by lazy { AlarmScheduler(this) }
     private val prefs by lazy { PrefsManager(this) }
     private val sabahNamaziManager by lazy { SabahNamaziManager(this) }
@@ -66,6 +69,21 @@ class MainActivity : AppCompatActivity() {
         binding.recyclerAlarms.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
         binding.recyclerAlarms.adapter = adapter
 
+        groupAdapter = AlarmGroupAdapter(
+            onActivate = { group -> onActivateGroupClicked(group) },
+            onClick = { group ->
+                startActivity(
+                    Intent(this, GroupEditActivity::class.java)
+                        .putExtra(GroupEditActivity.EXTRA_GROUP_ID, group.group.id)
+                )
+            }
+        )
+        binding.recyclerGroups.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(
+            this, androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL, false
+        )
+        binding.recyclerGroups.adapter = groupAdapter
+        binding.buttonAddGroup.setOnClickListener { onAddGroupClicked() }
+
         binding.fabAdd.setOnClickListener { onAddAlarmClicked() }
 
         binding.switchSabahNamazi.isChecked = prefs.isSabahNamaziEnabled()
@@ -76,6 +94,7 @@ class MainActivity : AppCompatActivity() {
         requestNotificationPermissionIfNeeded()
         requestBatteryOptimizationExemptionIfNeeded()
         observeAlarms()
+        observeGroups()
     }
 
     private fun onSabahNamaziToggled(enabled: Boolean) {
@@ -142,11 +161,41 @@ class MainActivity : AppCompatActivity() {
 
     private fun observeAlarms() {
         lifecycleScope.launch {
-            dao.observeAll().collect { alarms ->
+            dao.observeUngrouped().collect { alarms ->
                 adapter.submitList(alarms)
                 binding.emptyState.visibility = if (alarms.isEmpty()) android.view.View.VISIBLE
                 else android.view.View.GONE
             }
+        }
+    }
+
+    private fun observeGroups() {
+        lifecycleScope.launch {
+            combine(groupDao.observeAll(), dao.observeAll()) { groups, alarms ->
+                groups.map { group -> GroupWithAlarms(group, alarms.filter { it.groupId == group.id }) }
+            }.collect { groupAdapter.submitList(it) }
+        }
+    }
+
+    private fun onAddGroupClicked() {
+        if (!prefs.isPinSet()) {
+            showPinRequiredDialog()
+            return
+        }
+        startActivity(Intent(this, GroupEditActivity::class.java))
+    }
+
+    private fun onActivateGroupClicked(group: GroupWithAlarms) {
+        lifecycleScope.launch {
+            for (alarm in group.alarms) {
+                val next = scheduler.schedule(alarm)
+                dao.update(alarm.copy(enabled = true, nextTriggerAtMillis = next))
+            }
+            Snackbar.make(
+                binding.root,
+                getString(R.string.group_activated_message, group.group.name),
+                Snackbar.LENGTH_SHORT
+            ).show()
         }
     }
 

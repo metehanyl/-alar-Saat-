@@ -14,8 +14,14 @@ interface AlarmDao {
     @Query("SELECT * FROM alarms ORDER BY hour, minute")
     fun observeAll(): Flow<List<AlarmEntity>>
 
+    @Query("SELECT * FROM alarms WHERE groupId IS NULL ORDER BY hour, minute")
+    fun observeUngrouped(): Flow<List<AlarmEntity>>
+
     @Query("SELECT * FROM alarms ORDER BY hour, minute")
     suspend fun getAll(): List<AlarmEntity>
+
+    @Query("SELECT * FROM alarms WHERE groupId = :groupId ORDER BY hour, minute")
+    suspend fun getByGroupId(groupId: Int): List<AlarmEntity>
 
     @Query("SELECT * FROM alarms WHERE id = :id")
     suspend fun getById(id: Int): AlarmEntity?
