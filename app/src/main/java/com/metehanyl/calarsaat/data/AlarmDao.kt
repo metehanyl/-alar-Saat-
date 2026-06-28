@@ -32,6 +32,9 @@ interface AlarmDao {
     @Query("SELECT * FROM alarms WHERE isAutoSabahNamazi = 1")
     suspend fun getAutoSabahNamaziAlarms(): List<AlarmEntity>
 
+    @Query("SELECT * FROM alarms WHERE isAutoSabahNamazi = 1 ORDER BY hour, minute")
+    fun observeAutoSabahNamaziAlarms(): Flow<List<AlarmEntity>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(alarm: AlarmEntity): Long
 

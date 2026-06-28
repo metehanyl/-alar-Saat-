@@ -50,7 +50,7 @@
 
     <string name="sabah_namazi_title">Sabah Namazı</string>
     <string name="sabah_namazi_subtitle">İmsak vaktine göre otomatik 3 alarm kurar</string>
-    <string name="sabah_namazi_enabled_message">Sabah namazı alarmları kuruldu: %1$02d:%2$02d, %3$02d:%4$02d ve %5$02d:%6$02d</string>
+    <string name="sabah_namazi_enabled_message">Sabah namazı alarmları kuruldu: %1$s</string>
 
     <string name="alarm_groups_title">Alarm Grupları</string>
     <string name="new_group_title">Yeni Grup</string>
@@ -66,4 +66,10 @@
     <string name="pin_enable_switch">PIN ile kapatma</string>
     <string name="pin_entry_hint">4-6 haneli PIN</string>
     <string name="pin_required_error">PIN en az 4 hane olmalı</string>
+
+    <string name="action_expand">Göster/Gizle</string>
+    <string name="sabah_namazi_settings_title">Sabah Namazı Ayarları</string>
+    <string name="sabah_namazi_count_hint">Alarm sayısı</string>
+    <string name="sabah_namazi_interval_hint">Alarmlar arası dakika</string>
+    <string name="sabah_namazi_offset_hint">İmsaktan kaç dakika sonra</string>
 </resources>

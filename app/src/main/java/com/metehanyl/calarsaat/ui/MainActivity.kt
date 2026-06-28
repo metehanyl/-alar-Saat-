@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
+import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -21,8 +22,11 @@ import com.metehanyl.calarsaat.alarm.SabahNamaziResult
 import com.metehanyl.calarsaat.data.AlarmDatabase
 import com.metehanyl.calarsaat.data.AlarmEntity
 import com.metehanyl.calarsaat.data.AlarmGroupEntity
+import com.metehanyl.calarsaat.data.PinHasher
 import com.metehanyl.calarsaat.data.PrefsManager
+import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import com.metehanyl.calarsaat.databinding.ActivityMainBinding
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
@@ -37,6 +41,7 @@ class MainActivity : AppCompatActivity() {
     private val scheduler by lazy { AlarmScheduler(this) }
     private val prefs by lazy { PrefsManager(this) }
     private val sabahNamaziManager by lazy { SabahNamaziManager(this) }
+    private var sabahExpanded = false
 
     private val notificationPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
@@ -80,9 +85,7 @@ class MainActivity : AppCompatActivity() {
                 )
             }
         )
-        binding.recyclerGroups.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(
-            this, androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL, false
-        )
+        binding.recyclerGroups.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
         binding.recyclerGroups.adapter = groupAdapter
         binding.buttonAddGroup.setOnClickListener { onAddGroupClicked() }
 
@@ -92,11 +95,91 @@ class MainActivity : AppCompatActivity() {
         binding.switchSabahNamazi.setOnCheckedChangeListener { _, checked ->
             onSabahNamaziToggled(checked)
         }
+        binding.buttonSabahSettings.setOnClickListener { showSabahNamaziSettingsDialog() }
+        binding.buttonExpandSabah.setOnClickListener { toggleSabahExpand() }
 
         requestNotificationPermissionIfNeeded()
         requestBatteryOptimizationExemptionIfNeeded()
         observeAlarms()
         observeGroups()
+        observeSabahNamaziAlarms()
+    }
+
+    private fun toggleSabahExpand() {
+        sabahExpanded = !sabahExpanded
+        binding.layoutSabahTimesExpanded.visibility = if (sabahExpanded) View.VISIBLE else View.GONE
+        binding.buttonExpandSabah.animate().rotation(if (sabahExpanded) 180f else 0f).start()
+    }
+
+    private fun observeSabahNamaziAlarms() {
+        lifecycleScope.launch {
+            dao.observeAutoSabahNamaziAlarms().collect { alarms ->
+                binding.textSabahTimes.text = alarms.joinToString(", ") { "%02d:%02d".format(it.hour, it.minute) }
+            }
+        }
+    }
+
+    private fun showSabahNamaziSettingsDialog() {
+        val view = layoutInflater.inflate(R.layout.dialog_sabah_namazi_settings, null)
+        val editCount = view.findViewById<TextInputEditText>(R.id.editSabahCount)
+        val editInterval = view.findViewById<TextInputEditText>(R.id.editSabahInterval)
+        val editOffset = view.findViewById<TextInputEditText>(R.id.editSabahOffset)
+        val switchPin = view.findViewById<SwitchMaterial>(R.id.switchSabahPin)
+        val layoutPin = view.findViewById<TextInputLayout>(R.id.layoutSabahPin)
+        val editPin = view.findViewById<TextInputEditText>(R.id.editSabahPin)
+
+        editCount.setText(prefs.getSabahNamaziAlarmCount().toString())
+        editInterval.setText(prefs.getSabahNamaziIntervalMinutes().toString())
+        editOffset.setText(prefs.getSabahNamaziOffsetMinutes().toString())
+        switchPin.isChecked = prefs.isSabahNamaziPinRequired()
+        layoutPin.visibility = if (switchPin.isChecked) View.VISIBLE else View.GONE
+        switchPin.setOnCheckedChangeListener { _, checked ->
+            layoutPin.visibility = if (checked) View.VISIBLE else View.GONE
+        }
+
+        val dialog = AlertDialog.Builder(this)
+            .setTitle(R.string.sabah_namazi_settings_title)
+            .setView(view)
+            .setPositiveButton(R.string.action_save, null)
+            .setNegativeButton(R.string.action_cancel, null)
+            .create()
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val requirePin = switchPin.isChecked
+                val enteredPin = editPin.text?.toString().orEmpty().trim()
+                if (requirePin && enteredPin.isNotEmpty() && enteredPin.length < 4) {
+                    Snackbar.make(binding.root, R.string.pin_required_error, Snackbar.LENGTH_LONG).show()
+                    return@setOnClickListener
+                }
+                if (requirePin && enteredPin.isEmpty() && prefs.getSabahNamaziPinHash() == null) {
+                    Snackbar.make(binding.root, R.string.pin_required_error, Snackbar.LENGTH_LONG).show()
+                    return@setOnClickListener
+                }
+
+                val count = editCount.text?.toString()?.toIntOrNull()?.coerceIn(1, 10)
+                    ?: PrefsManager.DEFAULT_SABAH_COUNT
+                val interval = editInterval.text?.toString()?.toIntOrNull()?.coerceIn(1, 60)
+                    ?: PrefsManager.DEFAULT_SABAH_INTERVAL
+                val offset = editOffset.text?.toString()?.toIntOrNull()?.coerceIn(0, 120)
+                    ?: PrefsManager.DEFAULT_SABAH_OFFSET
+
+                prefs.setSabahNamaziAlarmCount(count)
+                prefs.setSabahNamaziIntervalMinutes(interval)
+                prefs.setSabahNamaziOffsetMinutes(offset)
+                prefs.setSabahNamaziPinRequired(requirePin)
+                if (requirePin) {
+                    if (enteredPin.isNotEmpty()) prefs.setSabahNamaziPinHash(PinHasher.hash(enteredPin))
+                } else {
+                    prefs.setSabahNamaziPinHash(null)
+                }
+
+                dialog.dismiss()
+                if (prefs.isSabahNamaziEnabled()) {
+                    performSabahNamaziRefresh()
+                }
+            }
+        }
+        dialog.show()
     }
 
     private fun onSabahNamaziToggled(enabled: Boolean) {
@@ -136,12 +219,10 @@ class MainActivity : AppCompatActivity() {
                 is SabahNamaziResult.Success -> {
                     prefs.setSabahNamaziEnabled(true)
                     sabahNamaziManager.scheduleDailyRefresh()
-                    val (h1, m1) = result.times[0]
-                    val (h2, m2) = result.times[1]
-                    val (h3, m3) = result.times[2]
+                    val timesText = result.times.joinToString(", ") { (h, m) -> "%02d:%02d".format(h, m) }
                     Snackbar.make(
                         binding.root,
-                        getString(R.string.sabah_namazi_enabled_message, h1, m1, h2, m2, h3, m3),
+                        getString(R.string.sabah_namazi_enabled_message, timesText),
                         Snackbar.LENGTH_LONG
                     ).show()
                 }

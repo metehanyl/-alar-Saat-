@@ -2,23 +2,24 @@
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="220dp"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginEnd="12dp"
+    android:layout_marginBottom="8dp"
     app:cardCornerRadius="12dp"
     app:cardElevation="2dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="14dp">
+        android:orientation="vertical">
 
         <LinearLayout
+            android:id="@+id/layoutGroupHeader"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:padding="14dp">
 
             <TextView
                 android:id="@+id/textGroupName"
@@ -34,18 +35,36 @@
             <com.google.android.material.switchmaterial.SwitchMaterial
                 android:id="@+id/switchGroupEnabled"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp" />
+
+            <ImageButton
+                android:id="@+id/buttonExpandGroup"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/action_expand"
+                android:padding="4dp"
+                android:src="@drawable/ic_expand_more" />
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/textGroupTimes"
+        <LinearLayout
+            android:id="@+id/layoutGroupTimesExpanded"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:maxLines="2"
-            android:textColor="?android:attr/textColorSecondary"
-            android:textSize="13sp"
-            tools:text="06:10, 06:30, 07:00" />
+            android:orientation="vertical"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:paddingBottom="14dp"
+            android:visibility="gone">
 
+            <TextView
+                android:id="@+id/textGroupTimes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="?android:attr/textColorSecondary"
+                android:textSize="13sp"
+                tools:text="06:10, 06:30, 07:00" />
+        </LinearLayout>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

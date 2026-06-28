@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import com.metehanyl.calarsaat.data.AlarmDatabase
 import com.metehanyl.calarsaat.data.AlarmEntity
+import com.metehanyl.calarsaat.data.PrefsManager
 import com.metehanyl.calarsaat.prayer.PrayerRepository
 import com.metehanyl.calarsaat.prayer.RefreshResult
 import java.util.Calendar
@@ -16,16 +17,17 @@ sealed class SabahNamaziResult {
 }
 
 /**
- * GPS konumundan otomatik olarak çözümlenen bugünün İmsak vaktine göre 3 one-time alarm kurar:
- * imsak+10, imsak+14 ve imsak+18 dakika, hepsi Klasik Çalar Saat melodisiyle ve normal PIN-kapatma
- * akışıyla. Günlük olarak yeniden çalıştırılır (bkz. [SabahNamaziRefreshReceiver]) çünkü İmsak
- * her gün birkaç dakika kayar.
+ * GPS konumundan otomatik olarak çözümlenen bugünün İmsak vaktine göre kullanıcının ayarladığı
+ * sayıda one-time alarm kurar (varsayılan: imsak+10, +14 ve +18 dakika), Klasik Çalar Saat
+ * melodisiyle ve isteğe bağlı PIN-kapatma akışıyla. Günlük olarak yeniden çalıştırılır (bkz.
+ * [SabahNamaziRefreshReceiver]) çünkü İmsak her gün birkaç dakika kayar.
  */
 class SabahNamaziManager(private val context: Context) {
 
     private val dao by lazy { AlarmDatabase.getInstance(context).alarmDao() }
     private val scheduler by lazy { AlarmScheduler(context) }
     private val prayerRepository by lazy { PrayerRepository(context) }
+    private val prefs by lazy { PrefsManager(context) }
 
     suspend fun refresh(): SabahNamaziResult {
         val imsak = when (val lookup = resolveTodaysImsak()) {
@@ -36,10 +38,16 @@ class SabahNamaziManager(private val context: Context) {
         cancelAutoAlarms()
 
         val base = nextOccurrenceOf(imsak.hour, imsak.minute)
+        val count = prefs.getSabahNamaziAlarmCount().coerceIn(1, 10)
+        val interval = prefs.getSabahNamaziIntervalMinutes().coerceIn(1, 60)
+        val offset = prefs.getSabahNamaziOffsetMinutes().coerceIn(0, 120)
+        val requirePin = prefs.isSabahNamaziPinRequired()
+        val pinHash = prefs.getSabahNamaziPinHash().takeIf { requirePin }
+
         val times = mutableListOf<Pair<Int, Int>>()
-        for (offsetMinutes in OFFSETS_MINUTES) {
+        for (i in 0 until count) {
             val cal = base.clone() as Calendar
-            cal.add(Calendar.MINUTE, offsetMinutes)
+            cal.add(Calendar.MINUTE, offset + i * interval)
             val hour = cal.get(Calendar.HOUR_OF_DAY)
             val minute = cal.get(Calendar.MINUTE)
 
@@ -48,7 +56,9 @@ class SabahNamaziManager(private val context: Context) {
                 minute = minute,
                 label = LABEL,
                 soundId = 0,
-                isAutoSabahNamazi = true
+                isAutoSabahNamazi = true,
+                requirePin = pinHash != null,
+                pinHash = pinHash
             )
             val id = dao.insert(alarm)
             val saved = alarm.copy(id = id.toInt())
@@ -148,7 +158,6 @@ class SabahNamaziManager(private val context: Context) {
 
     companion object {
         const val LABEL = "Sabah Namazı"
-        private val OFFSETS_MINUTES = intArrayOf(10, 14, 18)
         private const val REFRESH_REQUEST_CODE = 987654321
     }
 }

@@ -19,6 +19,8 @@ class AlarmGroupAdapter(
     private val onClick: (GroupWithAlarms) -> Unit
 ) : ListAdapter<GroupWithAlarms, AlarmGroupAdapter.GroupViewHolder>(DIFF) {
 
+    private val expandedGroupIds = mutableSetOf<Int>()
+
     override fun onCreateViewHolder(parent: ViewGroup, position: Int): GroupViewHolder {
         val binding = ItemAlarmGroupBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return GroupViewHolder(binding)
@@ -42,7 +44,16 @@ class AlarmGroupAdapter(
                 onToggle(item, checked)
             }
 
-            binding.root.setOnClickListener { onClick(item) }
+            val expanded = item.group.id in expandedGroupIds
+            binding.layoutGroupTimesExpanded.visibility =
+                if (expanded) android.view.View.VISIBLE else android.view.View.GONE
+            binding.buttonExpandGroup.rotation = if (expanded) 180f else 0f
+            binding.buttonExpandGroup.setOnClickListener {
+                if (expanded) expandedGroupIds.remove(item.group.id) else expandedGroupIds.add(item.group.id)
+                notifyItemChanged(bindingAdapterPosition)
+            }
+
+            binding.layoutGroupHeader.setOnClickListener { onClick(item) }
         }
     }
 
