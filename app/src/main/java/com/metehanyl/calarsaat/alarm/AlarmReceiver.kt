@@ -3,9 +3,9 @@ package com.metehanyl.calarsaat.alarm
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import androidx.core.content.ContextCompat
 import com.metehanyl.calarsaat.data.AlarmDatabase
+import com.metehanyl.calarsaat.ui.AlarmRingActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -29,6 +29,21 @@ class AlarmReceiver : BroadcastReceiver() {
             putExtra(EXTRA_ALARM_PIN_HASH, pinHash)
         }
         ContextCompat.startForegroundService(context, ringIntent)
+
+        // Launch the ring screen directly rather than relying solely on the
+        // notification's full-screen intent: AlarmManager.setAlarmClock()
+        // broadcasts carry a brief background-activity-launch exemption, and
+        // some OEMs/Android 14 silently revoke USE_FULL_SCREEN_INTENT for
+        // sideloaded apps, which would otherwise leave the screen off.
+        val activityIntent = Intent(context, AlarmRingActivity::class.java).apply {
+            putExtra(EXTRA_ALARM_ID, alarmId)
+            putExtra(EXTRA_ALARM_LABEL, label)
+            putExtra(EXTRA_ALARM_SOUND_ID, soundId)
+            putExtra(EXTRA_ALARM_REQUIRE_PIN, requirePin)
+            putExtra(EXTRA_ALARM_PIN_HASH, pinHash)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_USER_ACTION)
+        }
+        context.startActivity(activityIntent)
 
         if (isSnooze) return
 

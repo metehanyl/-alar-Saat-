@@ -127,13 +127,4 @@
         </GridLayout>
     </LinearLayout>
 
-    <Button
-        android:id="@+id/buttonDismissPlain"
-        android:layout_width="240dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:backgroundTint="@color/accent"
-        android:text="@string/ring_dismiss_button"
-        android:visibility="gone" />
-
 </LinearLayout>

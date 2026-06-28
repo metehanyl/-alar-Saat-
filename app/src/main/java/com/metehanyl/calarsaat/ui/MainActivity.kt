@@ -12,6 +12,7 @@ import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
@@ -100,6 +101,7 @@ class MainActivity : AppCompatActivity() {
 
         requestNotificationPermissionIfNeeded()
         requestBatteryOptimizationExemptionIfNeeded()
+        requestFullScreenIntentPermissionIfNeeded()
         observeAlarms()
         observeGroups()
         observeSabahNamaziAlarms()
@@ -357,6 +359,29 @@ class MainActivity : AppCompatActivity() {
             .setPositiveButton(R.string.battery_optimization_action) { _, _ ->
                 val intent = Intent(
                     Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                    Uri.parse("package:$packageName")
+                )
+                startActivity(intent)
+            }
+            .setNegativeButton(R.string.action_cancel, null)
+            .show()
+    }
+
+    /**
+     * Android 14+ silently revokes USE_FULL_SCREEN_INTENT for apps not installed via Play
+     * Store, which keeps the screen off when an alarm rings while locked. The user must grant
+     * it manually via this special-access settings screen.
+     */
+    private fun requestFullScreenIntentPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) return
+        if (NotificationManagerCompat.from(this).canUseFullScreenIntent()) return
+
+        AlertDialog.Builder(this)
+            .setTitle(R.string.full_screen_intent_title)
+            .setMessage(R.string.full_screen_intent_message)
+            .setPositiveButton(R.string.battery_optimization_action) { _, _ ->
+                val intent = Intent(
+                    Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT,
                     Uri.parse("package:$packageName")
                 )
                 startActivity(intent)

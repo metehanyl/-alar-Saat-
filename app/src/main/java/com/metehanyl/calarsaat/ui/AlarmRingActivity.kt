@@ -77,12 +77,9 @@ class AlarmRingActivity : AppCompatActivity() {
         pinHash = intent.getStringExtra(EXTRA_ALARM_PIN_HASH)
         if (requirePin && pinHash != null) {
             binding.layoutPinSection.visibility = android.view.View.VISIBLE
-            binding.buttonDismissPlain.visibility = android.view.View.GONE
             setupPinPad()
         } else {
             binding.layoutPinSection.visibility = android.view.View.GONE
-            binding.buttonDismissPlain.visibility = android.view.View.VISIBLE
-            binding.buttonDismissPlain.setOnClickListener { dismissAlarm() }
         }
         binding.textSwipeDismissHint.visibility =
             if (requirePin && pinHash != null) android.view.View.GONE else android.view.View.VISIBLE

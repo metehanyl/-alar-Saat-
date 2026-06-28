@@ -33,7 +33,6 @@
 
     <string name="ring_dismiss_hint">Kapatmak için PIN\'i girin</string>
     <string name="ring_pin_wrong">Yanlış PIN</string>
-    <string name="ring_dismiss_button">Kapat</string>
     <string name="ring_swipe_dismiss_hint">Kapat →</string>
     <string name="ring_swipe_snooze_hint">← Ertele (5 dk)</string>
 
@@ -49,6 +48,8 @@
     <string name="battery_optimization_title">Pil optimizasyonunu kapatın</string>
     <string name="battery_optimization_message">Alarmların güç tasarrufu modunda da güvenilir şekilde çalması için bu uygulamayı pil optimizasyonundan hariç tutmanız önerilir.</string>
     <string name="battery_optimization_action">İzin Ver</string>
+    <string name="full_screen_intent_title">Tam ekran alarm izni</string>
+    <string name="full_screen_intent_message">Alarm çaldığında ekran kilitliyken alarmın görünmesi için bu uygulamaya tam ekran bildirim izni vermeniz gerekiyor.</string>
 
     <string name="sabah_namazi_title">Sabah Namazı</string>
     <string name="sabah_namazi_subtitle">İmsak vaktine göre otomatik 3 alarm kurar</string>
