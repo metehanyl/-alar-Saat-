@@ -15,15 +15,12 @@
     <string name="delete_confirm_message">Bu alarmı silmek istiyor musunuz?</string>
     <string name="action_save">Kaydet</string>
     <string name="action_cancel">Vazgeç</string>
+    <string name="action_create">Oluştur</string>
 
     <string name="label_hint">Etiket (örn. İş)</string>
     <string name="repeat_title">Tekrar</string>
     <string name="new_alarm_title">Yeni Alarm</string>
     <string name="edit_alarm_title">Alarmı Düzenle</string>
-
-    <string name="pin_setup_required_title">PIN gerekli</string>
-    <string name="pin_setup_required_message">Alarmı kapatmak için önce bir PIN belirlemelisiniz.</string>
-    <string name="pin_setup_go">PIN Belirle</string>
 
     <string name="settings_title">Ayarlar</string>
     <string name="settings_pin_label">Alarmı kapatma PIN\'i</string>
@@ -65,6 +62,8 @@
     <string name="group_name_required_error">Grup adı gerekli</string>
     <string name="group_delete_button">Grubu Sil</string>
     <string name="group_delete_confirm_message">Bu grubu ve içindeki tüm alarmları silmek istiyor musunuz?</string>
-    <string name="group_activate_button">Kur</string>
-    <string name="group_activated_message">%1$s grubu kuruldu</string>
+
+    <string name="pin_enable_switch">PIN ile kapatma</string>
+    <string name="pin_entry_hint">4-6 haneli PIN</string>
+    <string name="pin_required_error">PIN en az 4 hane olmalı</string>
 </resources>

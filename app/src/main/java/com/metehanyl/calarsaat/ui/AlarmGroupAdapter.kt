@@ -15,7 +15,7 @@ data class GroupWithAlarms(
 )
 
 class AlarmGroupAdapter(
-    private val onActivate: (GroupWithAlarms) -> Unit,
+    private val onToggle: (GroupWithAlarms, Boolean) -> Unit,
     private val onClick: (GroupWithAlarms) -> Unit
 ) : ListAdapter<GroupWithAlarms, AlarmGroupAdapter.GroupViewHolder>(DIFF) {
 
@@ -35,7 +35,13 @@ class AlarmGroupAdapter(
             binding.textGroupName.text = item.group.name
             binding.textGroupTimes.text = item.alarms.sortedWith(compareBy({ it.hour }, { it.minute }))
                 .joinToString(", ") { "%02d:%02d".format(it.hour, it.minute) }
-            binding.buttonActivateGroup.setOnClickListener { onActivate(item) }
+
+            binding.switchGroupEnabled.setOnCheckedChangeListener(null)
+            binding.switchGroupEnabled.isChecked = item.alarms.isNotEmpty() && item.alarms.all { it.enabled }
+            binding.switchGroupEnabled.setOnCheckedChangeListener { _, checked ->
+                onToggle(item, checked)
+            }
+
             binding.root.setOnClickListener { onClick(item) }
         }
     }

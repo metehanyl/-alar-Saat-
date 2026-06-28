@@ -35,12 +35,14 @@ class AlarmRingingService : Service() {
         val alarmId = intent?.getIntExtra(EXTRA_ALARM_ID, -1) ?: -1
         val label = intent?.getStringExtra(EXTRA_ALARM_LABEL).orEmpty()
         val soundId = intent?.getIntExtra(EXTRA_ALARM_SOUND_ID, 0) ?: 0
+        val requirePin = intent?.getBooleanExtra(EXTRA_ALARM_REQUIRE_PIN, false) ?: false
+        val pinHash = intent?.getStringExtra(EXTRA_ALARM_PIN_HASH)
 
         currentAlarmId = alarmId
         currentLabel = label
 
         acquireWakeLock()
-        startForeground(NOTIFICATION_ID, buildNotification(alarmId, label))
+        startForeground(NOTIFICATION_ID, buildNotification(alarmId, label, requirePin, pinHash))
         requestAudioFocus()
         startSound(soundId)
         startVibration()
@@ -70,10 +72,12 @@ class AlarmRingingService : Service() {
         ).apply { acquire(10 * 60 * 1000L) }
     }
 
-    private fun buildNotification(alarmId: Int, label: String): Notification {
+    private fun buildNotification(alarmId: Int, label: String, requirePin: Boolean, pinHash: String?): Notification {
         val fullScreenIntent = Intent(this, AlarmRingActivity::class.java).apply {
             putExtra(EXTRA_ALARM_ID, alarmId)
             putExtra(EXTRA_ALARM_LABEL, label)
+            putExtra(EXTRA_ALARM_REQUIRE_PIN, requirePin)
+            putExtra(EXTRA_ALARM_PIN_HASH, pinHash)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_USER_ACTION
         }
         val fullScreenPendingIntent = PendingIntent.getActivity(

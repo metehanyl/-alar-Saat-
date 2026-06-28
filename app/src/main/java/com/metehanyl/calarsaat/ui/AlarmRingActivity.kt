@@ -8,16 +8,18 @@ import androidx.appcompat.app.AppCompatActivity
 import com.metehanyl.calarsaat.R
 import com.metehanyl.calarsaat.alarm.AlarmRingingService
 import com.metehanyl.calarsaat.alarm.EXTRA_ALARM_LABEL
-import com.metehanyl.calarsaat.data.PrefsManager
+import com.metehanyl.calarsaat.alarm.EXTRA_ALARM_PIN_HASH
+import com.metehanyl.calarsaat.alarm.EXTRA_ALARM_REQUIRE_PIN
+import com.metehanyl.calarsaat.data.PinHasher
 import com.metehanyl.calarsaat.databinding.ActivityAlarmRingBinding
 import java.util.Calendar
 
 class AlarmRingActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityAlarmRingBinding
-    private val prefs by lazy { PrefsManager(this) }
     private val enteredPin = StringBuilder()
     private val maxPinLength = 6
+    private var pinHash: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,7 +37,17 @@ class AlarmRingActivity : AppCompatActivity() {
             if (label.isBlank()) android.view.View.GONE else android.view.View.VISIBLE
         binding.textRingTime.text = currentTimeText()
 
-        setupPinPad()
+        val requirePin = intent.getBooleanExtra(EXTRA_ALARM_REQUIRE_PIN, false)
+        pinHash = intent.getStringExtra(EXTRA_ALARM_PIN_HASH)
+        if (requirePin && pinHash != null) {
+            binding.layoutPinSection.visibility = android.view.View.VISIBLE
+            binding.buttonDismissPlain.visibility = android.view.View.GONE
+            setupPinPad()
+        } else {
+            binding.layoutPinSection.visibility = android.view.View.GONE
+            binding.buttonDismissPlain.visibility = android.view.View.VISIBLE
+            binding.buttonDismissPlain.setOnClickListener { dismissAlarm() }
+        }
     }
 
     private fun currentTimeText(): String {
@@ -79,7 +91,7 @@ class AlarmRingActivity : AppCompatActivity() {
         binding.textRingError.visibility = android.view.View.INVISIBLE
 
         if (enteredPin.length >= 4) {
-            if (prefs.verifyPin(enteredPin.toString())) {
+            if (pinHash == PinHasher.hash(enteredPin.toString())) {
                 dismissAlarm()
                 return
             }

@@ -16,12 +16,16 @@ class AlarmReceiver : BroadcastReceiver() {
         val alarmId = intent.getIntExtra(EXTRA_ALARM_ID, -1)
         val label = intent.getStringExtra(EXTRA_ALARM_LABEL).orEmpty()
         val soundId = intent.getIntExtra(EXTRA_ALARM_SOUND_ID, 0)
+        val requirePin = intent.getBooleanExtra(EXTRA_ALARM_REQUIRE_PIN, false)
+        val pinHash = intent.getStringExtra(EXTRA_ALARM_PIN_HASH)
         if (alarmId == -1) return
 
         val ringIntent = Intent(context, AlarmRingingService::class.java).apply {
             putExtra(EXTRA_ALARM_ID, alarmId)
             putExtra(EXTRA_ALARM_LABEL, label)
             putExtra(EXTRA_ALARM_SOUND_ID, soundId)
+            putExtra(EXTRA_ALARM_REQUIRE_PIN, requirePin)
+            putExtra(EXTRA_ALARM_PIN_HASH, pinHash)
         }
         ContextCompat.startForegroundService(context, ringIntent)
 

@@ -20,7 +20,9 @@ import com.metehanyl.calarsaat.alarm.SabahNamaziManager
 import com.metehanyl.calarsaat.alarm.SabahNamaziResult
 import com.metehanyl.calarsaat.data.AlarmDatabase
 import com.metehanyl.calarsaat.data.AlarmEntity
+import com.metehanyl.calarsaat.data.AlarmGroupEntity
 import com.metehanyl.calarsaat.data.PrefsManager
+import com.google.android.material.textfield.TextInputEditText
 import com.metehanyl.calarsaat.databinding.ActivityMainBinding
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
@@ -70,7 +72,7 @@ class MainActivity : AppCompatActivity() {
         binding.recyclerAlarms.adapter = adapter
 
         groupAdapter = AlarmGroupAdapter(
-            onActivate = { group -> onActivateGroupClicked(group) },
+            onToggle = { group, checked -> onGroupToggled(group, checked) },
             onClick = { group ->
                 startActivity(
                     Intent(this, GroupEditActivity::class.java)
@@ -178,32 +180,42 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onAddGroupClicked() {
-        if (!prefs.isPinSet()) {
-            showPinRequiredDialog()
-            return
-        }
-        startActivity(Intent(this, GroupEditActivity::class.java))
+        val view = layoutInflater.inflate(R.layout.dialog_group_name, null)
+        val editName = view.findViewById<TextInputEditText>(R.id.editDialogGroupName)
+        AlertDialog.Builder(this)
+            .setTitle(R.string.new_group_title)
+            .setView(view)
+            .setPositiveButton(R.string.action_create) { _, _ ->
+                val name = editName.text?.toString()?.trim().orEmpty()
+                if (name.isNotBlank()) {
+                    lifecycleScope.launch {
+                        val groupId = groupDao.insert(AlarmGroupEntity(name = name)).toInt()
+                        startActivity(
+                            Intent(this@MainActivity, GroupEditActivity::class.java)
+                                .putExtra(GroupEditActivity.EXTRA_GROUP_ID, groupId)
+                        )
+                    }
+                }
+            }
+            .setNegativeButton(R.string.action_cancel, null)
+            .show()
     }
 
-    private fun onActivateGroupClicked(group: GroupWithAlarms) {
+    private fun onGroupToggled(group: GroupWithAlarms, enabled: Boolean) {
         lifecycleScope.launch {
             for (alarm in group.alarms) {
-                val next = scheduler.schedule(alarm)
-                dao.update(alarm.copy(enabled = true, nextTriggerAtMillis = next))
+                if (enabled) {
+                    val next = scheduler.schedule(alarm)
+                    dao.update(alarm.copy(enabled = true, nextTriggerAtMillis = next))
+                } else {
+                    scheduler.cancel(alarm)
+                    dao.update(alarm.copy(enabled = false))
+                }
             }
-            Snackbar.make(
-                binding.root,
-                getString(R.string.group_activated_message, group.group.name),
-                Snackbar.LENGTH_SHORT
-            ).show()
         }
     }
 
     private fun onAddAlarmClicked() {
-        if (!prefs.isPinSet()) {
-            showPinRequiredDialog()
-            return
-        }
         lifecycleScope.launch {
             if (dao.count() >= AlarmDatabase.MAX_ALARMS) {
                 Snackbar.make(
@@ -215,17 +227,6 @@ class MainActivity : AppCompatActivity() {
                 startActivity(Intent(this@MainActivity, AddEditAlarmActivity::class.java))
             }
         }
-    }
-
-    private fun showPinRequiredDialog() {
-        AlertDialog.Builder(this)
-            .setTitle(R.string.pin_setup_required_title)
-            .setMessage(R.string.pin_setup_required_message)
-            .setPositiveButton(R.string.pin_setup_go) { _, _ ->
-                startActivity(Intent(this, SettingsActivity::class.java))
-            }
-            .setNegativeButton(R.string.action_cancel, null)
-            .show()
     }
 
     private fun onToggleAlarm(alarm: AlarmEntity, enabled: Boolean) {

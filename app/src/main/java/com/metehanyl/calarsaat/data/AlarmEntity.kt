@@ -20,7 +20,9 @@ data class AlarmEntity(
     // True for the 3 auto-generated Sabah Namazı alarms, so the daily refresh can find/replace them.
     val isAutoSabahNamazi: Boolean = false,
     // Id of the AlarmGroupEntity this alarm belongs to, or null for a standalone alarm.
-    val groupId: Int? = null
+    val groupId: Int? = null,
+    val requirePin: Boolean = false,
+    val pinHash: String? = null
 ) {
     fun repeatDaysSet(): Set<Int> =
         if (repeatDays.isBlank()) emptySet()

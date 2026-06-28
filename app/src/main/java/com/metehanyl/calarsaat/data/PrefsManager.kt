@@ -1,7 +1,6 @@
 package com.metehanyl.calarsaat.data
 
 import android.content.Context
-import java.security.MessageDigest
 
 class PrefsManager(context: Context) {
 
@@ -10,17 +9,12 @@ class PrefsManager(context: Context) {
     fun isPinSet(): Boolean = prefs.contains(KEY_PIN_HASH)
 
     fun setPin(pin: String) {
-        prefs.edit().putString(KEY_PIN_HASH, hash(pin)).apply()
+        prefs.edit().putString(KEY_PIN_HASH, PinHasher.hash(pin)).apply()
     }
 
     fun verifyPin(pin: String): Boolean {
         val stored = prefs.getString(KEY_PIN_HASH, null) ?: return false
-        return stored == hash(pin)
-    }
-
-    private fun hash(value: String): String {
-        val digest = MessageDigest.getInstance("SHA-256").digest(value.toByteArray())
-        return digest.joinToString("") { "%02x".format(it) }
+        return stored == PinHasher.hash(pin)
     }
 
     fun isSabahNamaziEnabled(): Boolean = prefs.getBoolean(KEY_SABAH_NAMAZI_ENABLED, false)

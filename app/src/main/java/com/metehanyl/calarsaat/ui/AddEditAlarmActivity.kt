@@ -11,8 +11,10 @@ import com.metehanyl.calarsaat.R
 import com.metehanyl.calarsaat.alarm.AlarmScheduler
 import com.metehanyl.calarsaat.alarm.AlarmSounds
 import com.metehanyl.calarsaat.alarm.AlarmTonePlayer
+import com.google.android.material.snackbar.Snackbar
 import com.metehanyl.calarsaat.data.AlarmDatabase
 import com.metehanyl.calarsaat.data.AlarmEntity
+import com.metehanyl.calarsaat.data.PinHasher
 import com.metehanyl.calarsaat.databinding.ActivityAddEditAlarmBinding
 import com.metehanyl.calarsaat.util.DayUtils
 import kotlinx.coroutines.launch
@@ -57,6 +59,9 @@ class AddEditAlarmActivity : AppCompatActivity() {
         binding.buttonSave.setOnClickListener { onSaveClicked() }
         binding.buttonDelete.setOnClickListener { onDeleteClicked() }
         binding.buttonPreviewMelody.setOnClickListener { onPreviewClicked() }
+        binding.switchRequirePin.setOnCheckedChangeListener { _, checked ->
+            binding.layoutAlarmPin.visibility = if (checked) android.view.View.VISIBLE else android.view.View.GONE
+        }
     }
 
     private fun buildDayChips() {
@@ -129,6 +134,8 @@ class AddEditAlarmActivity : AppCompatActivity() {
             chip.isChecked = dayValue in days
         }
         melodyButtons[alarm.soundId]?.isChecked = true
+        binding.switchRequirePin.isChecked = alarm.requirePin
+        binding.layoutAlarmPin.visibility = if (alarm.requirePin) android.view.View.VISIBLE else android.view.View.GONE
     }
 
     private fun onSaveClicked() {
@@ -146,13 +153,31 @@ class AddEditAlarmActivity : AppCompatActivity() {
         val label = binding.editLabel.text?.toString().orEmpty().trim()
         val selectedDays = dayChips.filterValues { it.isChecked }.keys
 
+        val requirePin = binding.switchRequirePin.isChecked
+        val enteredPin = binding.editAlarmPin.text?.toString().orEmpty().trim()
+        if (requirePin && enteredPin.isNotEmpty() && enteredPin.length < 4) {
+            Snackbar.make(binding.root, R.string.pin_required_error, Snackbar.LENGTH_LONG).show()
+            return
+        }
+        if (requirePin && enteredPin.isEmpty() && editingAlarm?.pinHash == null) {
+            Snackbar.make(binding.root, R.string.pin_required_error, Snackbar.LENGTH_LONG).show()
+            return
+        }
+        val pinHash = when {
+            !requirePin -> null
+            enteredPin.isNotEmpty() -> PinHasher.hash(enteredPin)
+            else -> editingAlarm?.pinHash
+        }
+
         val alarm = (editingAlarm ?: AlarmEntity(hour = hour, minute = minute, label = label)).copy(
             hour = hour,
             minute = minute,
             label = label,
             repeatDays = AlarmEntity.daysToString(selectedDays),
             soundId = selectedSoundId(),
-            enabled = true
+            enabled = true,
+            requirePin = requirePin,
+            pinHash = pinHash
         )
 
         lifecycleScope.launch {

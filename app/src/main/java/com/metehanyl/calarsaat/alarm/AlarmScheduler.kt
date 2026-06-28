@@ -10,6 +10,8 @@ import java.util.Calendar
 const val EXTRA_ALARM_ID = "extra_alarm_id"
 const val EXTRA_ALARM_LABEL = "extra_alarm_label"
 const val EXTRA_ALARM_SOUND_ID = "extra_alarm_sound_id"
+const val EXTRA_ALARM_REQUIRE_PIN = "extra_alarm_require_pin"
+const val EXTRA_ALARM_PIN_HASH = "extra_alarm_pin_hash"
 
 class AlarmScheduler(private val context: Context) {
 
@@ -38,6 +40,8 @@ class AlarmScheduler(private val context: Context) {
             putExtra(EXTRA_ALARM_ID, alarm.id)
             putExtra(EXTRA_ALARM_LABEL, alarm.label)
             putExtra(EXTRA_ALARM_SOUND_ID, alarm.soundId)
+            putExtra(EXTRA_ALARM_REQUIRE_PIN, alarm.requirePin)
+            putExtra(EXTRA_ALARM_PIN_HASH, alarm.pinHash)
         }
         return PendingIntent.getBroadcast(
             context, alarm.id, intent,

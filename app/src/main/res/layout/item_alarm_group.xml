@@ -14,15 +14,28 @@
         android:orientation="vertical"
         android:padding="14dp">
 
-        <TextView
-            android:id="@+id/textGroupName"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            tools:text="İş Günleri" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/textGroupName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                tools:text="İş Günleri" />
+
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/switchGroupEnabled"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/textGroupTimes"
@@ -33,18 +46,6 @@
             android:textColor="?android:attr/textColorSecondary"
             android:textSize="13sp"
             tools:text="06:10, 06:30, 07:00" />
-
-        <Button
-            android:id="@+id/buttonActivateGroup"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:backgroundTint="@color/accent"
-            android:minHeight="0dp"
-            android:paddingTop="6dp"
-            android:paddingBottom="6dp"
-            android:text="@string/group_activate_button"
-            android:textSize="13sp" />
 
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>
