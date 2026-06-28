@@ -9,6 +9,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.chip.Chip
 import com.google.android.material.snackbar.Snackbar
 import com.metehanyl.calarsaat.R
 import com.metehanyl.calarsaat.alarm.AlarmScheduler
@@ -19,6 +20,7 @@ import com.metehanyl.calarsaat.data.AlarmEntity
 import com.metehanyl.calarsaat.data.AlarmGroupEntity
 import com.metehanyl.calarsaat.data.PinHasher
 import com.metehanyl.calarsaat.databinding.ActivityGroupEditBinding
+import com.metehanyl.calarsaat.util.DayUtils
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
@@ -32,6 +34,7 @@ class GroupEditActivity : AppCompatActivity() {
 
     private val times = mutableListOf<Pair<Int, Int>>()
     private lateinit var adapter: GroupTimeAdapter
+    private val dayChips = mutableMapOf<Int, Chip>()
     private lateinit var melodyButtons: Map<Int, RadioButton>
     private var editingGroup: AlarmGroupEntity? = null
     private var existingPinHash: String? = null
@@ -43,6 +46,7 @@ class GroupEditActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         binding.toolbar.setNavigationOnClickListener { finish() }
+        buildDayChips()
         setupMelodyOptions()
         setupVolumeSlider()
 
@@ -71,6 +75,10 @@ class GroupEditActivity : AppCompatActivity() {
 
                     val first = alarms.firstOrNull()
                     if (first != null) {
+                        val days = first.repeatDaysSet()
+                        for ((dayValue, chip) in dayChips) {
+                            chip.isChecked = dayValue in days
+                        }
                         melodyButtons[first.soundId]?.isChecked = true
                         existingPinHash = first.pinHash
                         binding.switchGroupRequirePin.isChecked = first.requirePin
@@ -94,6 +102,18 @@ class GroupEditActivity : AppCompatActivity() {
             binding.layoutGroupPin.visibility = if (checked) View.VISIBLE else View.GONE
         }
         updateEmptyHint()
+    }
+
+    private fun buildDayChips() {
+        for ((dayValue, label) in DayUtils.orderedDays) {
+            val chip = Chip(this).apply {
+                text = label
+                isCheckable = true
+                isClickable = true
+            }
+            dayChips[dayValue] = chip
+            binding.chipGroupGroupDays.addView(chip)
+        }
     }
 
     private fun setupMelodyOptions() {
@@ -200,6 +220,8 @@ class GroupEditActivity : AppCompatActivity() {
         }
         val soundId = selectedSoundId()
         val volume = selectedVolume()
+        val selectedDays = dayChips.filterValues { it.isChecked }.keys
+        val repeatDays = AlarmEntity.daysToString(selectedDays)
 
         lifecycleScope.launch {
             val existingInGroup = editingGroup?.let { dao.getByGroupId(it.id) } ?: emptyList()
@@ -231,6 +253,7 @@ class GroupEditActivity : AppCompatActivity() {
                     minute = minute,
                     label = name,
                     groupId = groupId,
+                    repeatDays = repeatDays,
                     soundId = soundId,
                     requirePin = requirePin,
                     pinHash = pinHash,

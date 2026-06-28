@@ -120,8 +120,9 @@ class MainActivity : AppCompatActivity() {
     private fun healSabahNamaziStateIfNeeded() {
         if (!prefs.isSabahNamaziEnabled()) return
         lifecycleScope.launch {
-            if (dao.getAutoSabahNamaziAlarms().isEmpty() && hasLocationPermission()) {
-                performSabahNamaziRefresh()
+            val hasArmedAlarm = dao.getAutoSabahNamaziAlarms().any { it.enabled }
+            if (!hasArmedAlarm && hasLocationPermission()) {
+                performSabahNamaziRefresh(silent = true)
             }
         }
     }
@@ -246,9 +247,9 @@ class MainActivity : AppCompatActivity() {
             ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) ==
             PackageManager.PERMISSION_GRANTED
 
-    private fun performSabahNamaziRefresh() {
+    private fun performSabahNamaziRefresh(silent: Boolean = false) {
         if (!hasLocationPermission()) {
-            resetSabahNamaziSwitch()
+            if (!silent) resetSabahNamaziSwitch()
             return
         }
         lifecycleScope.launch {
@@ -256,16 +257,23 @@ class MainActivity : AppCompatActivity() {
                 is SabahNamaziResult.Success -> {
                     prefs.setSabahNamaziEnabled(true)
                     sabahNamaziManager.scheduleDailyRefresh()
-                    val timesText = result.times.joinToString(", ") { (h, m) -> "%02d:%02d".format(h, m) }
-                    Snackbar.make(
-                        binding.root,
-                        getString(R.string.sabah_namazi_enabled_message, timesText),
-                        Snackbar.LENGTH_LONG
-                    ).show()
+                    if (!silent) {
+                        val timesText = result.times.joinToString(", ") { (h, m) -> "%02d:%02d".format(h, m) }
+                        Snackbar.make(
+                            binding.root,
+                            getString(R.string.sabah_namazi_enabled_message, timesText),
+                            Snackbar.LENGTH_LONG
+                        ).show()
+                    }
                 }
                 is SabahNamaziResult.Failure -> {
-                    resetSabahNamaziSwitch()
-                    Snackbar.make(binding.root, result.message, Snackbar.LENGTH_LONG).show()
+                    // Silent (auto-heal) failures must not flip the switch off or alarm the
+                    // user — prefs.isSabahNamaziEnabled() was never disabled, and the daily
+                    // refresh chain will simply retry tomorrow night.
+                    if (!silent) {
+                        resetSabahNamaziSwitch()
+                        Snackbar.make(binding.root, result.message, Snackbar.LENGTH_LONG).show()
+                    }
                 }
             }
         }

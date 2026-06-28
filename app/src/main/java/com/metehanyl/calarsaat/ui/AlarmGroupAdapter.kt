@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.metehanyl.calarsaat.data.AlarmEntity
 import com.metehanyl.calarsaat.data.AlarmGroupEntity
 import com.metehanyl.calarsaat.databinding.ItemAlarmGroupBinding
+import com.metehanyl.calarsaat.util.DayUtils
 
 data class GroupWithAlarms(
     val group: AlarmGroupEntity,
@@ -34,7 +35,8 @@ class AlarmGroupAdapter(
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: GroupWithAlarms) {
-            binding.textGroupName.text = item.group.name
+            val repeatSummary = DayUtils.summarize(item.alarms.firstOrNull()?.repeatDaysSet() ?: emptySet())
+            binding.textGroupName.text = "${item.group.name} • $repeatSummary"
             binding.textGroupTimes.text = item.alarms.sortedWith(compareBy({ it.hour }, { it.minute }))
                 .joinToString(", ") { "%02d:%02d".format(it.hour, it.minute) }
 
