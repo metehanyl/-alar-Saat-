@@ -103,6 +103,16 @@ class MainActivity : AppCompatActivity() {
         observeAlarms()
         observeGroups()
         observeSabahNamaziAlarms()
+        healSabahNamaziStateIfNeeded()
+    }
+
+    private fun healSabahNamaziStateIfNeeded() {
+        if (!prefs.isSabahNamaziEnabled()) return
+        lifecycleScope.launch {
+            if (dao.getAutoSabahNamaziAlarms().isEmpty() && hasLocationPermission()) {
+                performSabahNamaziRefresh()
+            }
+        }
     }
 
     private fun toggleSabahExpand() {
