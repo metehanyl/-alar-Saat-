@@ -3,6 +3,7 @@ package com.metehanyl.calarsaat.alarm
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.os.PowerManager
 import androidx.core.content.ContextCompat
 import com.metehanyl.calarsaat.data.AlarmDatabase
 import com.metehanyl.calarsaat.ui.AlarmRingActivity
@@ -18,8 +19,11 @@ class AlarmReceiver : BroadcastReceiver() {
         val soundId = intent.getIntExtra(EXTRA_ALARM_SOUND_ID, 0)
         val requirePin = intent.getBooleanExtra(EXTRA_ALARM_REQUIRE_PIN, false)
         val pinHash = intent.getStringExtra(EXTRA_ALARM_PIN_HASH)
+        val volume = intent.getIntExtra(EXTRA_ALARM_VOLUME, 100)
         val isSnooze = intent.getBooleanExtra(EXTRA_IS_SNOOZE, false)
         if (alarmId == -1) return
+
+        wakeScreen(context)
 
         val ringIntent = Intent(context, AlarmRingingService::class.java).apply {
             putExtra(EXTRA_ALARM_ID, alarmId)
@@ -27,6 +31,7 @@ class AlarmReceiver : BroadcastReceiver() {
             putExtra(EXTRA_ALARM_SOUND_ID, soundId)
             putExtra(EXTRA_ALARM_REQUIRE_PIN, requirePin)
             putExtra(EXTRA_ALARM_PIN_HASH, pinHash)
+            putExtra(EXTRA_ALARM_VOLUME, volume)
         }
         ContextCompat.startForegroundService(context, ringIntent)
 
@@ -41,6 +46,7 @@ class AlarmReceiver : BroadcastReceiver() {
             putExtra(EXTRA_ALARM_SOUND_ID, soundId)
             putExtra(EXTRA_ALARM_REQUIRE_PIN, requirePin)
             putExtra(EXTRA_ALARM_PIN_HASH, pinHash)
+            putExtra(EXTRA_ALARM_VOLUME, volume)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_USER_ACTION)
         }
         context.startActivity(activityIntent)
@@ -64,5 +70,19 @@ class AlarmReceiver : BroadcastReceiver() {
                 pendingResult.finish()
             }
         }
+    }
+
+    // Forces the display on immediately, independent of whether the activity launch below
+    // succeeds: some OEMs (and Android 14's USE_FULL_SCREEN_INTENT revocation for sideloaded
+    // apps) can block starting an Activity from the background, which would otherwise leave
+    // the screen fully off even though the alarm is ringing.
+    @Suppress("DEPRECATION")
+    private fun wakeScreen(context: Context) {
+        val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+        val wakeLock = powerManager.newWakeLock(
+            PowerManager.SCREEN_BRIGHT_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP or PowerManager.ON_AFTER_RELEASE,
+            "CalarSaat:AlarmScreenWakeLock"
+        )
+        wakeLock.acquire(10_000L)
     }
 }

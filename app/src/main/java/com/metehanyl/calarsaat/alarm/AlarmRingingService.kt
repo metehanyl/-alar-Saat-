@@ -37,14 +37,15 @@ class AlarmRingingService : Service() {
         val soundId = intent?.getIntExtra(EXTRA_ALARM_SOUND_ID, 0) ?: 0
         val requirePin = intent?.getBooleanExtra(EXTRA_ALARM_REQUIRE_PIN, false) ?: false
         val pinHash = intent?.getStringExtra(EXTRA_ALARM_PIN_HASH)
+        val volume = intent?.getIntExtra(EXTRA_ALARM_VOLUME, 100) ?: 100
 
         currentAlarmId = alarmId
         currentLabel = label
 
         acquireWakeLock()
-        startForeground(NOTIFICATION_ID, buildNotification(alarmId, label, soundId, requirePin, pinHash))
+        startForeground(NOTIFICATION_ID, buildNotification(alarmId, label, soundId, requirePin, pinHash, volume))
         requestAudioFocus()
-        startSound(soundId)
+        startSound(soundId, volume)
         startVibration()
 
         return START_STICKY
@@ -77,7 +78,8 @@ class AlarmRingingService : Service() {
         label: String,
         soundId: Int,
         requirePin: Boolean,
-        pinHash: String?
+        pinHash: String?,
+        volume: Int
     ): Notification {
         val fullScreenIntent = Intent(this, AlarmRingActivity::class.java).apply {
             putExtra(EXTRA_ALARM_ID, alarmId)
@@ -85,6 +87,7 @@ class AlarmRingingService : Service() {
             putExtra(EXTRA_ALARM_SOUND_ID, soundId)
             putExtra(EXTRA_ALARM_REQUIRE_PIN, requirePin)
             putExtra(EXTRA_ALARM_PIN_HASH, pinHash)
+            putExtra(EXTRA_ALARM_VOLUME, volume)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_USER_ACTION
         }
         val fullScreenPendingIntent = PendingIntent.getActivity(
@@ -107,10 +110,11 @@ class AlarmRingingService : Service() {
             .build()
     }
 
-    private fun startSound(soundId: Int) {
+    private fun startSound(soundId: Int, volumePercent: Int) {
         val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
         val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM)
-        audioManager.setStreamVolume(AudioManager.STREAM_ALARM, maxVolume, 0)
+        val targetVolume = (maxVolume * volumePercent.coerceIn(1, 100) / 100).coerceIn(1, maxVolume)
+        audioManager.setStreamVolume(AudioManager.STREAM_ALARM, targetVolume, 0)
 
         try {
             tonePlayer.start(AlarmSounds.byId(soundId))

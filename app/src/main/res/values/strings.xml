@@ -45,6 +45,9 @@
     <string name="melody_preview">Dinle</string>
     <string name="melody_preview_stop">Durdur</string>
 
+    <string name="volume_title">Ses Seviyesi</string>
+    <string name="volume_value_format">%1$d%%</string>
+
     <string name="battery_optimization_title">Pil optimizasyonunu kapatın</string>
     <string name="battery_optimization_message">Alarmların güç tasarrufu modunda da güvenilir şekilde çalması için bu uygulamayı pil optimizasyonundan hariç tutmanız önerilir.</string>
     <string name="battery_optimization_action">İzin Ver</string>

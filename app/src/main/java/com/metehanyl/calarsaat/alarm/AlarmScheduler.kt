@@ -12,6 +12,7 @@ const val EXTRA_ALARM_LABEL = "extra_alarm_label"
 const val EXTRA_ALARM_SOUND_ID = "extra_alarm_sound_id"
 const val EXTRA_ALARM_REQUIRE_PIN = "extra_alarm_require_pin"
 const val EXTRA_ALARM_PIN_HASH = "extra_alarm_pin_hash"
+const val EXTRA_ALARM_VOLUME = "extra_alarm_volume"
 const val EXTRA_IS_SNOOZE = "extra_is_snooze"
 
 class AlarmScheduler(private val context: Context) {
@@ -43,6 +44,7 @@ class AlarmScheduler(private val context: Context) {
         soundId: Int,
         requirePin: Boolean,
         pinHash: String?,
+        volume: Int = 100,
         minutes: Int = SNOOZE_MINUTES
     ): Long {
         val triggerAt = System.currentTimeMillis() + minutes * 60_000L
@@ -54,6 +56,7 @@ class AlarmScheduler(private val context: Context) {
             putExtra(EXTRA_ALARM_SOUND_ID, soundId)
             putExtra(EXTRA_ALARM_REQUIRE_PIN, requirePin)
             putExtra(EXTRA_ALARM_PIN_HASH, pinHash)
+            putExtra(EXTRA_ALARM_VOLUME, volume)
             putExtra(EXTRA_IS_SNOOZE, true)
         }
         val pendingIntent = PendingIntent.getBroadcast(
@@ -78,6 +81,7 @@ class AlarmScheduler(private val context: Context) {
             putExtra(EXTRA_ALARM_SOUND_ID, alarm.soundId)
             putExtra(EXTRA_ALARM_REQUIRE_PIN, alarm.requirePin)
             putExtra(EXTRA_ALARM_PIN_HASH, alarm.pinHash)
+            putExtra(EXTRA_ALARM_VOLUME, alarm.volume)
         }
         return PendingIntent.getBroadcast(
             context, alarm.id, intent,

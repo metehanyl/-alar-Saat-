@@ -15,6 +15,7 @@ import com.metehanyl.calarsaat.alarm.EXTRA_ALARM_LABEL
 import com.metehanyl.calarsaat.alarm.EXTRA_ALARM_PIN_HASH
 import com.metehanyl.calarsaat.alarm.EXTRA_ALARM_REQUIRE_PIN
 import com.metehanyl.calarsaat.alarm.EXTRA_ALARM_SOUND_ID
+import com.metehanyl.calarsaat.alarm.EXTRA_ALARM_VOLUME
 import com.metehanyl.calarsaat.data.PinHasher
 import com.metehanyl.calarsaat.databinding.ActivityAlarmRingBinding
 import java.util.Calendar
@@ -28,6 +29,7 @@ class AlarmRingActivity : AppCompatActivity() {
     private var pinHash: String? = null
     private var alarmId = -1
     private var soundId = 0
+    private var volume = 100
     private var requirePin = false
 
     private val gestureDetector by lazy {
@@ -66,6 +68,7 @@ class AlarmRingActivity : AppCompatActivity() {
 
         alarmId = intent.getIntExtra(EXTRA_ALARM_ID, -1)
         soundId = intent.getIntExtra(EXTRA_ALARM_SOUND_ID, 0)
+        volume = intent.getIntExtra(EXTRA_ALARM_VOLUME, 100)
 
         val label = intent.getStringExtra(EXTRA_ALARM_LABEL).orEmpty()
         binding.textRingLabel.text = label
@@ -179,7 +182,8 @@ class AlarmRingActivity : AppCompatActivity() {
                 label = intent.getStringExtra(EXTRA_ALARM_LABEL).orEmpty(),
                 soundId = soundId,
                 requirePin = requirePin,
-                pinHash = pinHash
+                pinHash = pinHash,
+                volume = volume
             )
         }
         finish()

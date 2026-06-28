@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import android.widget.RadioButton
+import android.widget.SeekBar
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.chip.Chip
 import com.metehanyl.calarsaat.R
@@ -40,6 +41,7 @@ class AddEditAlarmActivity : AppCompatActivity() {
         binding.toolbar.setNavigationOnClickListener { finish() }
         buildDayChips()
         setupMelodyOptions()
+        setupVolumeSlider()
 
         val alarmId = intent.getIntExtra(EXTRA_ALARM_ID, -1)
         if (alarmId != -1) {
@@ -90,6 +92,19 @@ class AddEditAlarmActivity : AppCompatActivity() {
     private fun selectedSoundId(): Int =
         melodyButtons.entries.firstOrNull { it.value.isChecked }?.key ?: 0
 
+    private fun setupVolumeSlider() {
+        binding.textVolumeValue.text = getString(R.string.volume_value_format, binding.seekVolume.progress)
+        binding.seekVolume.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+                binding.textVolumeValue.text = getString(R.string.volume_value_format, progress)
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar) {}
+        })
+    }
+
+    private fun selectedVolume(): Int = binding.seekVolume.progress.coerceIn(1, 100)
+
     private fun onPreviewClicked() {
         if (previewPlaying) {
             stopPreview()
@@ -134,6 +149,8 @@ class AddEditAlarmActivity : AppCompatActivity() {
             chip.isChecked = dayValue in days
         }
         melodyButtons[alarm.soundId]?.isChecked = true
+        binding.seekVolume.progress = alarm.volume
+        binding.textVolumeValue.text = getString(R.string.volume_value_format, alarm.volume)
         binding.switchRequirePin.isChecked = alarm.requirePin
         binding.layoutAlarmPin.visibility = if (alarm.requirePin) android.view.View.VISIBLE else android.view.View.GONE
     }
@@ -177,7 +194,8 @@ class AddEditAlarmActivity : AppCompatActivity() {
             soundId = selectedSoundId(),
             enabled = true,
             requirePin = requirePin,
-            pinHash = pinHash
+            pinHash = pinHash,
+            volume = selectedVolume()
         )
 
         lifecycleScope.launch {

@@ -22,7 +22,9 @@ data class AlarmEntity(
     // Id of the AlarmGroupEntity this alarm belongs to, or null for a standalone alarm.
     val groupId: Int? = null,
     val requirePin: Boolean = false,
-    val pinHash: String? = null
+    val pinHash: String? = null,
+    // Alarm volume as a percentage (1-100) of the device's max alarm stream volume.
+    val volume: Int = 100
 ) {
     fun repeatDaysSet(): Set<Int> =
         if (repeatDays.isBlank()) emptySet()
