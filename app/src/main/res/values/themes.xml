@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="Theme.CalarSaat" parent="Theme.Material3.DayNight.NoActionBar">
+    <style name="Theme.CalarSaat" parent="Theme.Material3.Light.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorSecondary">@color/accent</item>
         <item name="android:statusBarColor" tools:targetApi="21">@color/primary_dark</item>
+        <item name="android:windowBackground">@drawable/bg_sky_clouds</item>
     </style>
 
-    <style name="Theme.CalarSaat.Ring" parent="Theme.Material3.DayNight.NoActionBar">
+    <style name="Theme.CalarSaat.Ring" parent="Theme.Material3.Light.NoActionBar">
         <item name="android:windowBackground">@color/ring_background</item>
         <item name="android:statusBarColor" tools:targetApi="21">@color/ring_background</item>
         <item name="android:windowFullscreen">false</item>
