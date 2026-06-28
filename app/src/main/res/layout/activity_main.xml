@@ -75,11 +75,12 @@
 
             <ImageButton
                 android:id="@+id/buttonAddGroup"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
                 android:layout_marginEnd="8dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
+                android:background="@drawable/bg_round_accent"
                 android:contentDescription="@string/new_group_title"
+                android:padding="6dp"
                 android:src="@drawable/ic_add" />
 
             <TextView
