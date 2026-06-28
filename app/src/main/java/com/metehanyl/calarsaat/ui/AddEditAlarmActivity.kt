@@ -4,7 +4,7 @@ import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.AppCompatRadioButton
+import android.widget.RadioButton
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.chip.Chip
 import com.metehanyl.calarsaat.R
@@ -26,7 +26,7 @@ class AddEditAlarmActivity : AppCompatActivity() {
 
     private var editingAlarm: AlarmEntity? = null
     private val dayChips = mutableMapOf<Int, Chip>()
-    private lateinit var melodyButtons: Map<Int, AppCompatRadioButton>
+    private lateinit var melodyButtons: Map<Int, RadioButton>
     private var previewPlaying = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
