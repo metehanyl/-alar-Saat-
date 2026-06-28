@@ -1,0 +1,54 @@
+name: CalarSaat
+options:
+  bundleIdPrefix: com.metehanyl
+  deploymentTarget:
+    iOS: "17.0"
+configs:
+  Debug: debug
+  Release: release
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    DEVELOPMENT_LANGUAGE: tr
+    ENABLE_PREVIEWS: YES
+targets:
+  CalarSaat:
+    type: application
+    platform: iOS
+    sources:
+      - path: CalarSaat
+        excludes:
+          - "Resources/Info.plist"
+    resources:
+      - path: CalarSaat/Resources/Sounds
+      - path: CalarSaat/Resources/Assets.xcassets
+    info:
+      path: CalarSaat/Resources/Info.plist
+      properties:
+        CFBundleDisplayName: Çalar Saat
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        NSLocationWhenInUseUsageDescription: Sabah namazı alarmlarını imsak vaktine göre kurabilmek için konumunuza ihtiyacımız var.
+        NSLocationAlwaysAndWhenInUseUsageDescription: Sabah namazı alarmlarını imsak vaktine göre güncel tutabilmek için konumunuza ihtiyacımız var.
+        UIBackgroundModes:
+          - fetch
+          - processing
+        BGTaskSchedulerPermittedIdentifiers:
+          - com.metehanyl.calarsaat.sabahnamazi.refresh
+    entitlements:
+      path: CalarSaat/Resources/CalarSaat.entitlements
+      properties:
+        com.apple.developer.usernotifications.time-sensitive: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.metehanyl.calarsaat
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        TARGETED_DEVICE_FAMILY: "1"
+schemes:
+  CalarSaat:
+    build:
+      targets:
+        CalarSaat: all
+    run:
+      config: Debug
