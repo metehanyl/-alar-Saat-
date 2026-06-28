@@ -8,14 +8,29 @@
     android:paddingTop="10dp"
     android:paddingBottom="10dp">
 
-    <TextView
-        android:id="@+id/textTime"
+    <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        tools:text="06:30" />
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/textTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            tools:text="06:30" />
+
+        <TextView
+            android:id="@+id/textRemaining"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="?attr/colorPrimary"
+            android:textSize="13sp"
+            tools:text="2 sa 14 dk sonra" />
+
+    </LinearLayout>
 
     <ImageButton
         android:id="@+id/buttonDeleteTime"

@@ -59,6 +59,12 @@ class PrefsManager(context: Context) {
         prefs.edit().putInt(KEY_SABAH_VOLUME, volume).apply()
     }
 
+    fun isOemAutostartPromptShown(): Boolean = prefs.getBoolean(KEY_OEM_AUTOSTART_PROMPT_SHOWN, false)
+
+    fun setOemAutostartPromptShown(shown: Boolean) {
+        prefs.edit().putBoolean(KEY_OEM_AUTOSTART_PROMPT_SHOWN, shown).apply()
+    }
+
     companion object {
         private const val KEY_PIN_HASH = "pin_hash"
         private const val KEY_SABAH_NAMAZI_ENABLED = "sabah_namazi_enabled"
@@ -68,6 +74,7 @@ class PrefsManager(context: Context) {
         private const val KEY_SABAH_REQUIRE_PIN = "sabah_namazi_require_pin"
         private const val KEY_SABAH_PIN_HASH = "sabah_namazi_pin_hash"
         private const val KEY_SABAH_VOLUME = "sabah_namazi_volume"
+        private const val KEY_OEM_AUTOSTART_PROMPT_SHOWN = "oem_autostart_prompt_shown"
 
         // Default settings reproduce the original fixed behavior: imsak+10, +14, +18.
         const val DEFAULT_SABAH_COUNT = 3

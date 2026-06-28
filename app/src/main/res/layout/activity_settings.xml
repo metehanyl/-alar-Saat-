@@ -71,5 +71,27 @@
             android:backgroundTint="@color/accent"
             android:text="@string/settings_pin_save" />
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            android:text="@string/oem_autostart_title"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="@string/oem_autostart_message"
+            android:textColor="?android:attr/textColorSecondary" />
+
+        <Button
+            android:id="@+id/buttonOemAutostart"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/oem_autostart_action"
+            style="@style/Widget.Material3.Button.TextButton" />
+
     </LinearLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.metehanyl.calarsaat.databinding.ItemGroupTimeBinding
+import com.metehanyl.calarsaat.util.TimeRemainingFormatter
 
 class GroupTimeAdapter(
     private val times: MutableList<Pair<Int, Int>>,
@@ -26,6 +27,8 @@ class GroupTimeAdapter(
 
         fun bind(time: Pair<Int, Int>) {
             binding.textTime.text = "%02d:%02d".format(time.first, time.second)
+            binding.textRemaining.text =
+                TimeRemainingFormatter.format(binding.root.context, time.first, time.second)
             binding.buttonDeleteTime.setOnClickListener { onDelete(bindingAdapterPosition) }
         }
     }

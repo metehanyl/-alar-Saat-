@@ -6,6 +6,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.metehanyl.calarsaat.R
 import com.metehanyl.calarsaat.data.PrefsManager
 import com.metehanyl.calarsaat.databinding.ActivitySettingsBinding
+import com.metehanyl.calarsaat.util.OemPermissionHelper
 
 class SettingsActivity : AppCompatActivity() {
 
@@ -19,6 +20,9 @@ class SettingsActivity : AppCompatActivity() {
 
         binding.toolbar.setNavigationOnClickListener { finish() }
         binding.buttonSavePin.setOnClickListener { onSavePinClicked() }
+        binding.buttonOemAutostart.setOnClickListener {
+            OemPermissionHelper.openAutoStartSettings(this)
+        }
     }
 
     private fun onSavePinClicked() {

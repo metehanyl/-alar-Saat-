@@ -35,6 +35,18 @@
         app:layout_constraintTop_toBottomOf="@id/textTime"
         tools:text="İş • Hafta içi" />
 
+    <TextView
+        android:id="@+id/textRemaining"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:textColor="?attr/colorPrimary"
+        android:textSize="13sp"
+        app:layout_constraintEnd_toStartOf="@id/switchEnabled"
+        app:layout_constraintStart_toStartOf="@id/textTime"
+        app:layout_constraintTop_toBottomOf="@id/textLabel"
+        tools:text="2 sa 14 dk sonra" />
+
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/switchEnabled"
         android:layout_width="wrap_content"

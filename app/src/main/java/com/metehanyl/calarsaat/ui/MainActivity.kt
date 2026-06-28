@@ -29,6 +29,7 @@ import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.metehanyl.calarsaat.databinding.ActivityMainBinding
+import com.metehanyl.calarsaat.util.OemPermissionHelper
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
@@ -100,7 +101,7 @@ class MainActivity : AppCompatActivity() {
         binding.buttonExpandSabah.setOnClickListener { toggleSabahExpand() }
 
         requestNotificationPermissionIfNeeded()
-        requestBatteryOptimizationExemptionIfNeeded()
+        requestOemAutostartPermissionIfNeeded()
         observeAlarms()
         observeGroups()
         observeSabahNamaziAlarms()
@@ -113,6 +114,7 @@ class MainActivity : AppCompatActivity() {
         // dismissed the prompt without granting it, or reinstalled the app, which revokes
         // this special access again on Android 14+ for sideloaded apps.
         requestFullScreenIntentPermissionIfNeeded()
+        requestBatteryOptimizationExemptionIfNeeded()
     }
 
     private fun healSabahNamaziStateIfNeeded() {
@@ -366,6 +368,27 @@ class MainActivity : AppCompatActivity() {
                 notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
         }
+    }
+
+    /**
+     * Xiaomi/Huawei/Oppo/Vivo/Samsung etc. kill backgrounded apps or block lock-screen pop-ups
+     * via their own app managers, which standard Android permissions can't grant. There's no API
+     * to query whether the user has actually whitelisted the app, so this is only shown once
+     * (revisit via Settings) rather than nagging on every resume.
+     */
+    private fun requestOemAutostartPermissionIfNeeded() {
+        if (prefs.isOemAutostartPromptShown()) return
+        if (!OemPermissionHelper.isRestrictiveOem()) return
+        prefs.setOemAutostartPromptShown(true)
+
+        AlertDialog.Builder(this)
+            .setTitle(R.string.oem_autostart_title)
+            .setMessage(R.string.oem_autostart_message)
+            .setPositiveButton(R.string.oem_autostart_action) { _, _ ->
+                OemPermissionHelper.openAutoStartSettings(this)
+            }
+            .setNegativeButton(R.string.action_cancel, null)
+            .show()
     }
 
     private fun requestBatteryOptimizationExemptionIfNeeded() {

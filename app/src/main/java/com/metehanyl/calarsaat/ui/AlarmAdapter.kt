@@ -1,6 +1,7 @@
 package com.metehanyl.calarsaat.ui
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -8,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.metehanyl.calarsaat.data.AlarmEntity
 import com.metehanyl.calarsaat.databinding.ItemAlarmBinding
 import com.metehanyl.calarsaat.util.DayUtils
+import com.metehanyl.calarsaat.util.TimeRemainingFormatter
 
 class AlarmAdapter(
     private val onToggle: (AlarmEntity, Boolean) -> Unit,
@@ -31,6 +33,15 @@ class AlarmAdapter(
             val repeatSummary = DayUtils.summarize(alarm.repeatDaysSet())
             binding.textLabel.text = if (alarm.label.isBlank()) repeatSummary
             else "${alarm.label} • $repeatSummary"
+
+            if (alarm.enabled) {
+                binding.textRemaining.visibility = View.VISIBLE
+                binding.textRemaining.text = TimeRemainingFormatter.format(
+                    binding.root.context, alarm.hour, alarm.minute, alarm.repeatDaysSet()
+                )
+            } else {
+                binding.textRemaining.visibility = View.GONE
+            }
 
             binding.switchEnabled.setOnCheckedChangeListener(null)
             binding.switchEnabled.isChecked = alarm.enabled

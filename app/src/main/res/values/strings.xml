@@ -48,11 +48,18 @@
     <string name="volume_title">Ses Seviyesi</string>
     <string name="volume_value_format">%1$d%%</string>
 
+    <string name="time_remaining_minutes">%1$d dk sonra</string>
+    <string name="time_remaining_hours_minutes">%1$d sa %2$d dk sonra</string>
+
     <string name="battery_optimization_title">Pil optimizasyonunu kapatın</string>
     <string name="battery_optimization_message">Alarmların güç tasarrufu modunda da güvenilir şekilde çalması için bu uygulamayı pil optimizasyonundan hariç tutmanız önerilir.</string>
     <string name="battery_optimization_action">İzin Ver</string>
     <string name="full_screen_intent_title">Tam ekran alarm izni</string>
     <string name="full_screen_intent_message">Alarm çaldığında ekran kilitliyken alarmın görünmesi için bu uygulamaya tam ekran bildirim izni vermeniz gerekiyor.</string>
+
+    <string name="oem_autostart_title">Arka plan izni gerekli</string>
+    <string name="oem_autostart_message">Telefonunuzun üreticisi (Xiaomi, Samsung, Huawei, Oppo, Vivo vb.) arka plandaki uygulamaları kısıtlayabiliyor. Alarmın ekran kilitliyken de güvenilir şekilde çalması için açılan ekranda \"Otomatik başlatma\" ve arka plan/kilit ekranı izinlerini bu uygulama için açın.</string>
+    <string name="oem_autostart_action">Ayarları Aç</string>
 
     <string name="sabah_namazi_title">Sabah Namazı</string>
     <string name="sabah_namazi_subtitle">İmsak vaktine göre otomatik 3 alarm kurar</string>
