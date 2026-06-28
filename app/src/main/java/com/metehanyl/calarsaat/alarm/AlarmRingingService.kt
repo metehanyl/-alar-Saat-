@@ -6,6 +6,7 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.media.AudioAttributes
+import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.media.RingtoneManager
@@ -23,24 +24,42 @@ import com.metehanyl.calarsaat.ui.AlarmRingActivity
 class AlarmRingingService : Service() {
 
     private var mediaPlayer: MediaPlayer? = null
+    private val tonePlayer = AlarmTonePlayer()
     private var vibrator: Vibrator? = null
     private var wakeLock: PowerManager.WakeLock? = null
+    private var audioFocusRequest: AudioFocusRequest? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val alarmId = intent?.getIntExtra(EXTRA_ALARM_ID, -1) ?: -1
         val label = intent?.getStringExtra(EXTRA_ALARM_LABEL).orEmpty()
+        val soundId = intent?.getIntExtra(EXTRA_ALARM_SOUND_ID, 0) ?: 0
 
         currentAlarmId = alarmId
         currentLabel = label
 
         acquireWakeLock()
         startForeground(NOTIFICATION_ID, buildNotification(alarmId, label))
-        startSound()
+        requestAudioFocus()
+        startSound(soundId)
         startVibration()
 
         return START_STICKY
+    }
+
+    private fun requestAudioFocus() {
+        val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        val request = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE)
+            .setAudioAttributes(
+                AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_ALARM)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .build()
+            )
+            .build()
+        audioManager.requestAudioFocus(request)
+        audioFocusRequest = request
     }
 
     private fun acquireWakeLock() {
@@ -77,11 +96,19 @@ class AlarmRingingService : Service() {
             .build()
     }
 
-    private fun startSound() {
+    private fun startSound(soundId: Int) {
         val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
         val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM)
         audioManager.setStreamVolume(AudioManager.STREAM_ALARM, maxVolume, 0)
 
+        try {
+            tonePlayer.start(AlarmSounds.byId(soundId))
+        } catch (e: Exception) {
+            startFallbackRingtone()
+        }
+    }
+
+    private fun startFallbackRingtone() {
         val alarmUri = RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_ALARM)
             ?: RingtoneManager.getValidRingtoneUri(this)
 
@@ -118,6 +145,7 @@ class AlarmRingingService : Service() {
     }
 
     override fun onDestroy() {
+        tonePlayer.stop()
         mediaPlayer?.let {
             if (it.isPlaying) it.stop()
             it.release()
@@ -125,6 +153,9 @@ class AlarmRingingService : Service() {
         mediaPlayer = null
         vibrator?.cancel()
         wakeLock?.let { if (it.isHeld) it.release() }
+        audioFocusRequest?.let {
+            (getSystemService(Context.AUDIO_SERVICE) as AudioManager).abandonAudioFocusRequest(it)
+        }
         currentAlarmId = -1
         super.onDestroy()
     }

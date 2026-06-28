@@ -4,10 +4,13 @@ import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.AppCompatRadioButton
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.chip.Chip
 import com.metehanyl.calarsaat.R
 import com.metehanyl.calarsaat.alarm.AlarmScheduler
+import com.metehanyl.calarsaat.alarm.AlarmSounds
+import com.metehanyl.calarsaat.alarm.AlarmTonePlayer
 import com.metehanyl.calarsaat.data.AlarmDatabase
 import com.metehanyl.calarsaat.data.AlarmEntity
 import com.metehanyl.calarsaat.databinding.ActivityAddEditAlarmBinding
@@ -19,17 +22,22 @@ class AddEditAlarmActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAddEditAlarmBinding
     private val dao by lazy { AlarmDatabase.getInstance(this).alarmDao() }
     private val scheduler by lazy { AlarmScheduler(this) }
+    private val tonePlayer = AlarmTonePlayer()
 
     private var editingAlarm: AlarmEntity? = null
     private val dayChips = mutableMapOf<Int, Chip>()
+    private lateinit var melodyButtons: Map<Int, AppCompatRadioButton>
+    private var previewPlaying = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAddEditAlarmBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        binding.timePicker.setIs24HourView(true)
         binding.toolbar.setNavigationOnClickListener { finish() }
         buildDayChips()
+        setupMelodyOptions()
 
         val alarmId = intent.getIntExtra(EXTRA_ALARM_ID, -1)
         if (alarmId != -1) {
@@ -48,6 +56,7 @@ class AddEditAlarmActivity : AppCompatActivity() {
 
         binding.buttonSave.setOnClickListener { onSaveClicked() }
         binding.buttonDelete.setOnClickListener { onDeleteClicked() }
+        binding.buttonPreviewMelody.setOnClickListener { onPreviewClicked() }
     }
 
     private fun buildDayChips() {
@@ -60,6 +69,48 @@ class AddEditAlarmActivity : AppCompatActivity() {
             dayChips[dayValue] = chip
             binding.chipGroupDays.addView(chip)
         }
+    }
+
+    private fun setupMelodyOptions() {
+        melodyButtons = mapOf(
+            0 to binding.radioMelody0,
+            1 to binding.radioMelody1,
+            2 to binding.radioMelody2,
+            3 to binding.radioMelody3,
+            4 to binding.radioMelody4
+        )
+        binding.radioGroupMelody.setOnCheckedChangeListener { _, _ -> stopPreview() }
+    }
+
+    private fun selectedSoundId(): Int =
+        melodyButtons.entries.firstOrNull { it.value.isChecked }?.key ?: 0
+
+    private fun onPreviewClicked() {
+        if (previewPlaying) {
+            stopPreview()
+        } else {
+            tonePlayer.start(AlarmSounds.byId(selectedSoundId()))
+            previewPlaying = true
+            binding.buttonPreviewMelody.setText(R.string.melody_preview_stop)
+        }
+    }
+
+    private fun stopPreview() {
+        if (previewPlaying) {
+            tonePlayer.stop()
+            previewPlaying = false
+            binding.buttonPreviewMelody.setText(R.string.melody_preview)
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        stopPreview()
+    }
+
+    override fun onDestroy() {
+        tonePlayer.stop()
+        super.onDestroy()
     }
 
     private fun bindAlarmToForm(alarm: AlarmEntity) {
@@ -77,6 +128,7 @@ class AddEditAlarmActivity : AppCompatActivity() {
         for ((dayValue, chip) in dayChips) {
             chip.isChecked = dayValue in days
         }
+        melodyButtons[alarm.soundId]?.isChecked = true
     }
 
     private fun onSaveClicked() {
@@ -99,6 +151,7 @@ class AddEditAlarmActivity : AppCompatActivity() {
             minute = minute,
             label = label,
             repeatDays = AlarmEntity.daysToString(selectedDays),
+            soundId = selectedSoundId(),
             enabled = true
         )
 

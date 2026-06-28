@@ -3,8 +3,11 @@ package com.metehanyl.calarsaat.ui
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
+import android.provider.Settings
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -58,6 +61,7 @@ class MainActivity : AppCompatActivity() {
         binding.fabAdd.setOnClickListener { onAddAlarmClicked() }
 
         requestNotificationPermissionIfNeeded()
+        requestBatteryOptimizationExemptionIfNeeded()
         observeAlarms()
     }
 
@@ -121,5 +125,23 @@ class MainActivity : AppCompatActivity() {
                 notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
         }
+    }
+
+    private fun requestBatteryOptimizationExemptionIfNeeded() {
+        val powerManager = getSystemService(POWER_SERVICE) as PowerManager
+        if (powerManager.isIgnoringBatteryOptimizations(packageName)) return
+
+        AlertDialog.Builder(this)
+            .setTitle(R.string.battery_optimization_title)
+            .setMessage(R.string.battery_optimization_message)
+            .setPositiveButton(R.string.battery_optimization_action) { _, _ ->
+                val intent = Intent(
+                    Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                    Uri.parse("package:$packageName")
+                )
+                startActivity(intent)
+            }
+            .setNegativeButton(R.string.action_cancel, null)
+            .show()
     }
 }

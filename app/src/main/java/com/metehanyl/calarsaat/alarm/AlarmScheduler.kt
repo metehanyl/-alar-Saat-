@@ -9,6 +9,7 @@ import java.util.Calendar
 
 const val EXTRA_ALARM_ID = "extra_alarm_id"
 const val EXTRA_ALARM_LABEL = "extra_alarm_label"
+const val EXTRA_ALARM_SOUND_ID = "extra_alarm_sound_id"
 
 class AlarmScheduler(private val context: Context) {
 
@@ -36,6 +37,7 @@ class AlarmScheduler(private val context: Context) {
         val intent = Intent(context, AlarmReceiver::class.java).apply {
             putExtra(EXTRA_ALARM_ID, alarm.id)
             putExtra(EXTRA_ALARM_LABEL, alarm.label)
+            putExtra(EXTRA_ALARM_SOUND_ID, alarm.soundId)
         }
         return PendingIntent.getBroadcast(
             context, alarm.id, intent,

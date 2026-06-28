@@ -62,6 +62,60 @@
                 android:layout_marginTop="8dp"
                 app:singleLine="false" />
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@string/melody_title"
+                android:textStyle="bold" />
+
+            <RadioGroup
+                android:id="@+id/radioGroupMelody"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="vertical">
+
+                <RadioButton
+                    android:id="@+id/radioMelody0"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/melody_classic"
+                    android:checked="true" />
+
+                <RadioButton
+                    android:id="@+id/radioMelody1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/melody_digital" />
+
+                <RadioButton
+                    android:id="@+id/radioMelody2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/melody_triplet" />
+
+                <RadioButton
+                    android:id="@+id/radioMelody3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/melody_rising" />
+
+                <RadioButton
+                    android:id="@+id/radioMelody4"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/melody_siren" />
+            </RadioGroup>
+
+            <Button
+                android:id="@+id/buttonPreviewMelody"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/melody_preview"
+                style="@style/Widget.Material3.Button.TextButton" />
+
             <Button
                 android:id="@+id/buttonSave"
                 android:layout_width="match_parent"

@@ -37,4 +37,17 @@
     <string name="ring_dismiss_hint">Kapatmak için PIN\'i girin</string>
     <string name="ring_pin_wrong">Yanlış PIN</string>
     <string name="ring_dismiss_button">Kapat</string>
+
+    <string name="melody_title">Alarm Melodisi</string>
+    <string name="melody_classic">Klasik Çalar Saat</string>
+    <string name="melody_digital">Dijital Atış</string>
+    <string name="melody_triplet">Acil Üçleme</string>
+    <string name="melody_rising">Yükselen Alarm</string>
+    <string name="melody_siren">Siren</string>
+    <string name="melody_preview">Dinle</string>
+    <string name="melody_preview_stop">Durdur</string>
+
+    <string name="battery_optimization_title">Pil optimizasyonunu kapatın</string>
+    <string name="battery_optimization_message">Alarmların güç tasarrufu modunda da güvenilir şekilde çalması için bu uygulamayı pil optimizasyonundan hariç tutmanız önerilir.</string>
+    <string name="battery_optimization_action">İzin Ver</string>
 </resources>
