@@ -4,29 +4,34 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import com.metehanyl.calarsaat.data.AlarmDatabase
 import com.metehanyl.calarsaat.data.AlarmEntity
+import com.metehanyl.calarsaat.prayer.PrayerRepository
+import com.metehanyl.calarsaat.prayer.RefreshResult
 import java.util.Calendar
 
 sealed class SabahNamaziResult {
     data class Success(val times: List<Pair<Int, Int>>) : SabahNamaziResult()
-    object NoData : SabahNamaziResult()
+    data class Failure(val message: String) : SabahNamaziResult()
 }
 
 /**
- * Reads today's İmsak time from the Ezan Vakti app's ContentProvider and schedules
- * 3 one-time alarms at imsak+10, imsak+14 and imsak+18 minutes, all using the Klasik
- * Çalar Saat melody and the app's normal PIN-dismiss flow. Re-run daily (see
- * [SabahNamaziRefreshReceiver]) since İmsak shifts by a minute or so each day.
+ * GPS konumundan otomatik olarak çözümlenen bugünün İmsak vaktine göre 3 one-time alarm kurar:
+ * imsak+10, imsak+14 ve imsak+18 dakika, hepsi Klasik Çalar Saat melodisiyle ve normal PIN-kapatma
+ * akışıyla. Günlük olarak yeniden çalıştırılır (bkz. [SabahNamaziRefreshReceiver]) çünkü İmsak
+ * her gün birkaç dakika kayar.
  */
 class SabahNamaziManager(private val context: Context) {
 
     private val dao by lazy { AlarmDatabase.getInstance(context).alarmDao() }
     private val scheduler by lazy { AlarmScheduler(context) }
+    private val prayerRepository by lazy { PrayerRepository(context) }
 
     suspend fun refresh(): SabahNamaziResult {
-        val imsak = queryImsakTime() ?: return SabahNamaziResult.NoData
+        val imsak = when (val lookup = resolveTodaysImsak()) {
+            is ImsakLookup.Found -> lookup.time
+            is ImsakLookup.NotFound -> return SabahNamaziResult.Failure(lookup.message)
+        }
 
         cancelAutoAlarms()
 
@@ -103,26 +108,40 @@ class SabahNamaziManager(private val context: Context) {
         return candidate
     }
 
-    private fun queryImsakTime(): ImsakTime? {
-        val cursor = try {
-            context.contentResolver.query(IMSAK_URI, null, null, null, null)
-        } catch (e: SecurityException) {
-            null
-        } catch (e: IllegalArgumentException) {
-            null
-        } ?: return null
-
-        cursor.use {
-            if (!it.moveToFirst()) return null
-            val imsakIndex = it.getColumnIndex("imsak")
-            if (imsakIndex == -1) return null
-            val raw = it.getString(imsakIndex) ?: return null
-            val parts = raw.split(":")
-            if (parts.size != 2) return null
-            val hour = parts[0].trim().toIntOrNull() ?: return null
-            val minute = parts[1].trim().toIntOrNull() ?: return null
-            return ImsakTime(hour, minute)
+    private suspend fun resolveTodaysImsak(): ImsakLookup {
+        val cached = prayerRepository.getCachedBundle()
+        if (cached != null) {
+            val (day, isToday) = cached.todayOrClosest()
+            if (isToday) {
+                return parseImsak(day.imsak)?.let { ImsakLookup.Found(it) }
+                    ?: ImsakLookup.NotFound("İmsak vakti okunamadı.")
+            }
         }
+        return when (val result = prayerRepository.refresh()) {
+            is RefreshResult.Success -> {
+                val (day, isToday) = result.bundle.todayOrClosest()
+                if (!isToday) {
+                    ImsakLookup.NotFound("Bugünün İmsak vakti alınamadı.")
+                } else {
+                    parseImsak(day.imsak)?.let { ImsakLookup.Found(it) }
+                        ?: ImsakLookup.NotFound("İmsak vakti okunamadı.")
+                }
+            }
+            is RefreshResult.Failure -> ImsakLookup.NotFound(result.message)
+        }
+    }
+
+    private fun parseImsak(raw: String): ImsakTime? {
+        val parts = raw.split(":")
+        if (parts.size != 2) return null
+        val hour = parts[0].trim().toIntOrNull() ?: return null
+        val minute = parts[1].trim().toIntOrNull() ?: return null
+        return ImsakTime(hour, minute)
+    }
+
+    private sealed class ImsakLookup {
+        data class Found(val time: ImsakTime) : ImsakLookup()
+        data class NotFound(val message: String) : ImsakLookup()
     }
 
     private data class ImsakTime(val hour: Int, val minute: Int)
@@ -131,6 +150,5 @@ class SabahNamaziManager(private val context: Context) {
         const val LABEL = "Sabah Namazı"
         private val OFFSETS_MINUTES = intArrayOf(10, 14, 18)
         private const val REFRESH_REQUEST_CODE = 987654321
-        private val IMSAK_URI: Uri = Uri.parse("content://com.metehanyl.ezanvakti.provider/imsak")
     }
 }

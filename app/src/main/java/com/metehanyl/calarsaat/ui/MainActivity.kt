@@ -36,6 +36,11 @@ class MainActivity : AppCompatActivity() {
     private val notificationPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
 
+    private val locationPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+            performSabahNamaziRefresh()
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -75,33 +80,15 @@ class MainActivity : AppCompatActivity() {
 
     private fun onSabahNamaziToggled(enabled: Boolean) {
         if (enabled) {
-            lifecycleScope.launch {
-                when (val result = sabahNamaziManager.refresh()) {
-                    is SabahNamaziResult.Success -> {
-                        prefs.setSabahNamaziEnabled(true)
-                        sabahNamaziManager.scheduleDailyRefresh()
-                        val (h1, m1) = result.times[0]
-                        val (h2, m2) = result.times[1]
-                        val (h3, m3) = result.times[2]
-                        Snackbar.make(
-                            binding.root,
-                            getString(R.string.sabah_namazi_enabled_message, h1, m1, h2, m2, h3, m3),
-                            Snackbar.LENGTH_LONG
-                        ).show()
-                    }
-                    SabahNamaziResult.NoData -> {
-                        binding.switchSabahNamazi.setOnCheckedChangeListener(null)
-                        binding.switchSabahNamazi.isChecked = false
-                        binding.switchSabahNamazi.setOnCheckedChangeListener { _, checked ->
-                            onSabahNamaziToggled(checked)
-                        }
-                        Snackbar.make(
-                            binding.root,
-                            R.string.sabah_namazi_no_data,
-                            Snackbar.LENGTH_LONG
-                        ).show()
-                    }
-                }
+            if (hasLocationPermission()) {
+                performSabahNamaziRefresh()
+            } else {
+                locationPermissionLauncher.launch(
+                    arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    )
+                )
             }
         } else {
             prefs.setSabahNamaziEnabled(false)
@@ -109,6 +96,47 @@ class MainActivity : AppCompatActivity() {
                 sabahNamaziManager.cancelAutoAlarms()
                 sabahNamaziManager.cancelDailyRefresh()
             }
+        }
+    }
+
+    private fun hasLocationPermission(): Boolean =
+        ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
+            PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) ==
+            PackageManager.PERMISSION_GRANTED
+
+    private fun performSabahNamaziRefresh() {
+        if (!hasLocationPermission()) {
+            resetSabahNamaziSwitch()
+            return
+        }
+        lifecycleScope.launch {
+            when (val result = sabahNamaziManager.refresh()) {
+                is SabahNamaziResult.Success -> {
+                    prefs.setSabahNamaziEnabled(true)
+                    sabahNamaziManager.scheduleDailyRefresh()
+                    val (h1, m1) = result.times[0]
+                    val (h2, m2) = result.times[1]
+                    val (h3, m3) = result.times[2]
+                    Snackbar.make(
+                        binding.root,
+                        getString(R.string.sabah_namazi_enabled_message, h1, m1, h2, m2, h3, m3),
+                        Snackbar.LENGTH_LONG
+                    ).show()
+                }
+                is SabahNamaziResult.Failure -> {
+                    resetSabahNamaziSwitch()
+                    Snackbar.make(binding.root, result.message, Snackbar.LENGTH_LONG).show()
+                }
+            }
+        }
+    }
+
+    private fun resetSabahNamaziSwitch() {
+        binding.switchSabahNamazi.setOnCheckedChangeListener(null)
+        binding.switchSabahNamazi.isChecked = false
+        binding.switchSabahNamazi.setOnCheckedChangeListener { _, checked ->
+            onSabahNamaziToggled(checked)
         }
     }
 

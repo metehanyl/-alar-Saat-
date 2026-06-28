@@ -53,6 +53,5 @@
 
     <string name="sabah_namazi_title">Sabah Namazı</string>
     <string name="sabah_namazi_subtitle">İmsak vaktine göre otomatik 3 alarm kurar</string>
-    <string name="sabah_namazi_no_data">Ezan Vakti uygulaması bulunamadı veya henüz vakit önbelleğe alınmamış. Lütfen önce Ezan Vakti uygulamasını açın.</string>
     <string name="sabah_namazi_enabled_message">Sabah namazı alarmları kuruldu: %1$02d:%2$02d, %3$02d:%4$02d ve %5$02d:%6$02d</string>
 </resources>
