@@ -18,6 +18,8 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
 import com.metehanyl.calarsaat.R
 import com.metehanyl.calarsaat.alarm.AlarmScheduler
+import com.metehanyl.calarsaat.alarm.AlarmSounds
+import com.metehanyl.calarsaat.alarm.AlarmTonePlayer
 import com.metehanyl.calarsaat.alarm.SabahNamaziManager
 import com.metehanyl.calarsaat.alarm.SabahNamaziResult
 import com.metehanyl.calarsaat.data.AlarmDatabase
@@ -161,12 +163,19 @@ class MainActivity : AppCompatActivity() {
         editOffset.setText(prefs.getSabahNamaziOffsetMinutes().toString())
         seekVolume.progress = prefs.getSabahNamaziVolume()
         textVolumeValue.text = getString(R.string.volume_value_format, seekVolume.progress)
+        val dialogTonePlayer = AlarmTonePlayer()
         seekVolume.setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: android.widget.SeekBar, progress: Int, fromUser: Boolean) {
                 textVolumeValue.text = getString(R.string.volume_value_format, progress)
+                if (fromUser) dialogTonePlayer.setVolume(progress)
             }
-            override fun onStartTrackingTouch(seekBar: android.widget.SeekBar) {}
-            override fun onStopTrackingTouch(seekBar: android.widget.SeekBar) {}
+            override fun onStartTrackingTouch(seekBar: android.widget.SeekBar) {
+                dialogTonePlayer.start(AlarmSounds.byId(0))
+                dialogTonePlayer.setVolume(seekBar.progress)
+            }
+            override fun onStopTrackingTouch(seekBar: android.widget.SeekBar) {
+                dialogTonePlayer.stop()
+            }
         })
         switchPin.isChecked = prefs.isSabahNamaziPinRequired()
         layoutPin.visibility = if (switchPin.isChecked) View.VISIBLE else View.GONE
@@ -180,6 +189,7 @@ class MainActivity : AppCompatActivity() {
             .setPositiveButton(R.string.action_save, null)
             .setNegativeButton(R.string.action_cancel, null)
             .create()
+        dialog.setOnDismissListener { dialogTonePlayer.stop() }
         dialog.setOnShowListener {
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                 val requirePin = switchPin.isChecked

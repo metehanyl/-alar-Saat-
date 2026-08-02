@@ -38,6 +38,10 @@ class AlarmTonePlayer {
         audioTrack = track
     }
 
+    fun setVolume(percent: Int) {
+        audioTrack?.setVolume((percent / 100f).coerceIn(0f, 1f))
+    }
+
     fun stop() {
         audioTrack?.let {
             try {

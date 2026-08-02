@@ -136,9 +136,17 @@ class GroupEditActivity : AppCompatActivity() {
         binding.seekGroupVolume.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
                 binding.textGroupVolumeValue.text = getString(R.string.volume_value_format, progress)
+                if (fromUser) tonePlayer.setVolume(progress)
             }
-            override fun onStartTrackingTouch(seekBar: SeekBar) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar) {}
+            override fun onStartTrackingTouch(seekBar: SeekBar) {
+                previewPlaying = false
+                binding.buttonPreviewGroupMelody.setText(R.string.melody_preview)
+                tonePlayer.start(AlarmSounds.byId(selectedSoundId()))
+                tonePlayer.setVolume(seekBar.progress)
+            }
+            override fun onStopTrackingTouch(seekBar: SeekBar) {
+                tonePlayer.stop()
+            }
         })
     }
 
