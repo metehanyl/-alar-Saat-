@@ -58,7 +58,6 @@
             android:excludeFromRecents="true"
             android:showWhenLocked="true"
             android:turnScreenOn="true"
-            android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.CalarSaat.Ring" />
 
         <receiver
