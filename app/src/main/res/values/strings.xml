@@ -86,4 +86,26 @@
     <string name="sabah_namazi_count_hint">Alarm sayısı</string>
     <string name="sabah_namazi_interval_hint">Alarmlar arası dakika</string>
     <string name="sabah_namazi_offset_hint">İmsaktan kaç dakika sonra</string>
+
+    <string name="lock_type_title">Kilitleme Yöntemi</string>
+    <string name="lock_type_none">Yok</string>
+    <string name="lock_type_pin">PIN</string>
+    <string name="lock_type_pattern">Şekil</string>
+    <string name="lock_type_text">Metin</string>
+
+    <string name="pattern_draw_hint">Parmağınızı sürükleyerek şekil çizin (en az 4 nokta)</string>
+    <string name="pattern_set_ok">Şekil çizildi ✓</string>
+    <string name="pattern_already_set">Mevcut şekil korunuyor. Değiştirmek için çizin:</string>
+    <string name="pattern_not_set_error">Şekil çizin</string>
+    <string name="pattern_too_short_error">En az 4 nokta bağlayın</string>
+
+    <string name="text_pass_hint">Metin şifresi (en az 4 karakter)</string>
+    <string name="text_pass_too_short_error">Şifre en az 4 karakter olmalı</string>
+
+    <string name="ring_dismiss_hint_pattern">Kapatmak için şekil çizin</string>
+    <string name="ring_dismiss_hint_text">Kapatmak için şifreyi girin</string>
+    <string name="ring_pattern_wrong">Yanlış şekil, tekrar çizin</string>
+    <string name="ring_text_wrong">Yanlış şifre</string>
+    <string name="ring_confirm_button">Onayla</string>
+    <string name="time_tap_to_change">Saati değiştirmek için dokunun</string>
 </resources>

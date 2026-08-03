@@ -14,6 +14,9 @@ const val EXTRA_ALARM_REQUIRE_PIN = "extra_alarm_require_pin"
 const val EXTRA_ALARM_PIN_HASH = "extra_alarm_pin_hash"
 const val EXTRA_ALARM_VOLUME = "extra_alarm_volume"
 const val EXTRA_IS_SNOOZE = "extra_is_snooze"
+const val EXTRA_ALARM_LOCK_TYPE = "extra_alarm_lock_type"
+const val EXTRA_ALARM_PATTERN_HASH = "extra_alarm_pattern_hash"
+const val EXTRA_ALARM_TEXT_PASS_HASH = "extra_alarm_text_pass_hash"
 
 class AlarmScheduler(private val context: Context) {
 
@@ -37,7 +40,6 @@ class AlarmScheduler(private val context: Context) {
         alarmManager.cancel(buildPendingIntent(alarm))
     }
 
-    /** Reschedules a ringing alarm to fire again after [minutes], independent of its normal repeat schedule. */
     fun scheduleSnooze(
         alarmId: Int,
         label: String,
@@ -45,6 +47,9 @@ class AlarmScheduler(private val context: Context) {
         requirePin: Boolean,
         pinHash: String?,
         volume: Int = 100,
+        lockType: String = "",
+        patternHash: String? = null,
+        textPassHash: String? = null,
         minutes: Int = SNOOZE_MINUTES
     ): Long {
         val triggerAt = System.currentTimeMillis() + minutes * 60_000L
@@ -57,6 +62,9 @@ class AlarmScheduler(private val context: Context) {
             putExtra(EXTRA_ALARM_REQUIRE_PIN, requirePin)
             putExtra(EXTRA_ALARM_PIN_HASH, pinHash)
             putExtra(EXTRA_ALARM_VOLUME, volume)
+            putExtra(EXTRA_ALARM_LOCK_TYPE, lockType)
+            putExtra(EXTRA_ALARM_PATTERN_HASH, patternHash)
+            putExtra(EXTRA_ALARM_TEXT_PASS_HASH, textPassHash)
             putExtra(EXTRA_IS_SNOOZE, true)
         }
         val pendingIntent = PendingIntent.getBroadcast(
@@ -82,6 +90,9 @@ class AlarmScheduler(private val context: Context) {
             putExtra(EXTRA_ALARM_REQUIRE_PIN, alarm.requirePin)
             putExtra(EXTRA_ALARM_PIN_HASH, alarm.pinHash)
             putExtra(EXTRA_ALARM_VOLUME, alarm.volume)
+            putExtra(EXTRA_ALARM_LOCK_TYPE, alarm.effectiveLockType())
+            putExtra(EXTRA_ALARM_PATTERN_HASH, alarm.patternHash)
+            putExtra(EXTRA_ALARM_TEXT_PASS_HASH, alarm.textPassHash)
         }
         return PendingIntent.getBroadcast(
             context, alarm.id, intent,
@@ -89,7 +100,6 @@ class AlarmScheduler(private val context: Context) {
         )
     }
 
-    /** Computes the next epoch-millis trigger time for this alarm's hour/minute/repeat days. */
     fun computeNextTriggerMillis(alarm: AlarmEntity): Long =
         TimeRemainingFormatter.nextTriggerMillis(alarm.hour, alarm.minute, alarm.repeatDaysSet())
 

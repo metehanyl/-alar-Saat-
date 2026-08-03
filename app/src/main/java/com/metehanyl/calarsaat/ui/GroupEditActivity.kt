@@ -38,6 +38,9 @@ class GroupEditActivity : AppCompatActivity() {
     private lateinit var melodyButtons: Map<Int, RadioButton>
     private var editingGroup: AlarmGroupEntity? = null
     private var existingPinHash: String? = null
+    private var existingPatternHash: String? = null
+    private var existingTextPassHash: String? = null
+    private var drawnPattern: List<Int>? = null
     private var previewPlaying = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -81,12 +84,28 @@ class GroupEditActivity : AppCompatActivity() {
                         }
                         melodyButtons[first.soundId]?.isChecked = true
                         existingPinHash = first.pinHash
-                        binding.switchGroupRequirePin.isChecked = first.requirePin
-                        binding.layoutGroupPin.visibility =
-                            if (first.requirePin) View.VISIBLE else View.GONE
+                        existingPatternHash = first.patternHash
+                        existingTextPassHash = first.textPassHash
                         binding.seekGroupVolume.progress = first.volume
                         binding.textGroupVolumeValue.text =
                             getString(R.string.volume_value_format, first.volume)
+
+                        when (first.effectiveLockType()) {
+                            "pin" -> {
+                                binding.radioGroupLockPin.isChecked = true
+                                binding.layoutGroupLockPin.visibility = View.VISIBLE
+                            }
+                            "pattern" -> {
+                                binding.radioGroupLockPattern.isChecked = true
+                                binding.layoutGroupLockPattern.visibility = View.VISIBLE
+                                binding.textGroupPatternStatus.text = getString(R.string.pattern_already_set)
+                            }
+                            "text" -> {
+                                binding.radioGroupLockText.isChecked = true
+                                binding.layoutGroupLockText.visibility = View.VISIBLE
+                            }
+                            else -> binding.radioGroupLockNone.isChecked = true
+                        }
                     }
                 }
             }
@@ -98,9 +117,18 @@ class GroupEditActivity : AppCompatActivity() {
         binding.buttonSaveGroup.setOnClickListener { onSaveClicked() }
         binding.buttonDeleteGroup.setOnClickListener { onDeleteGroupClicked() }
         binding.buttonPreviewGroupMelody.setOnClickListener { onPreviewClicked() }
-        binding.switchGroupRequirePin.setOnCheckedChangeListener { _, checked ->
-            binding.layoutGroupPin.visibility = if (checked) View.VISIBLE else View.GONE
+
+        binding.radioGroupGroupLockType.setOnCheckedChangeListener { _, checkedId ->
+            binding.layoutGroupLockPin.visibility = if (checkedId == R.id.radioGroupLockPin) View.VISIBLE else View.GONE
+            binding.layoutGroupLockPattern.visibility = if (checkedId == R.id.radioGroupLockPattern) View.VISIBLE else View.GONE
+            binding.layoutGroupLockText.visibility = if (checkedId == R.id.radioGroupLockText) View.VISIBLE else View.GONE
         }
+
+        binding.patternLockViewGroup.onPatternComplete = { pattern ->
+            drawnPattern = pattern
+            binding.textGroupPatternStatus.text = getString(R.string.pattern_set_ok)
+        }
+
         updateEmptyHint()
     }
 
@@ -211,21 +239,61 @@ class GroupEditActivity : AppCompatActivity() {
             return
         }
 
-        val requirePin = binding.switchGroupRequirePin.isChecked
-        val enteredPin = binding.editGroupPin.text?.toString().orEmpty().trim()
-        if (requirePin && enteredPin.isNotEmpty() && enteredPin.length < 4) {
-            Snackbar.make(binding.root, R.string.pin_required_error, Snackbar.LENGTH_LONG).show()
-            return
+        val lockType = when (binding.radioGroupGroupLockType.checkedRadioButtonId) {
+            R.id.radioGroupLockPin -> "pin"
+            R.id.radioGroupLockPattern -> "pattern"
+            R.id.radioGroupLockText -> "text"
+            else -> ""
         }
-        if (requirePin && enteredPin.isEmpty() && existingPinHash == null) {
-            Snackbar.make(binding.root, R.string.pin_required_error, Snackbar.LENGTH_LONG).show()
-            return
+
+        val enteredPin = binding.editGroupLockPin.text?.toString().orEmpty().trim()
+        val enteredText = binding.editGroupLockText.text?.toString().orEmpty()
+
+        when (lockType) {
+            "pin" -> {
+                if (enteredPin.isNotEmpty() && enteredPin.length < 4) {
+                    Snackbar.make(binding.root, R.string.pin_required_error, Snackbar.LENGTH_LONG).show()
+                    return
+                }
+                if (enteredPin.isEmpty() && existingPinHash == null) {
+                    Snackbar.make(binding.root, R.string.pin_required_error, Snackbar.LENGTH_LONG).show()
+                    return
+                }
+            }
+            "pattern" -> {
+                if (drawnPattern == null && existingPatternHash == null) {
+                    Snackbar.make(binding.root, R.string.pattern_not_set_error, Snackbar.LENGTH_LONG).show()
+                    return
+                }
+            }
+            "text" -> {
+                if (enteredText.isNotEmpty() && enteredText.length < 4) {
+                    Snackbar.make(binding.root, R.string.text_pass_too_short_error, Snackbar.LENGTH_LONG).show()
+                    return
+                }
+                if (enteredText.isEmpty() && existingTextPassHash == null) {
+                    Snackbar.make(binding.root, R.string.text_pass_too_short_error, Snackbar.LENGTH_LONG).show()
+                    return
+                }
+            }
         }
+
         val pinHash = when {
-            !requirePin -> null
+            lockType != "pin" -> null
             enteredPin.isNotEmpty() -> PinHasher.hash(enteredPin)
             else -> existingPinHash
         }
+        val patternHash = when {
+            lockType != "pattern" -> null
+            drawnPattern != null -> PinHasher.hash(drawnPattern!!.joinToString(","))
+            else -> existingPatternHash
+        }
+        val textPassHash = when {
+            lockType != "text" -> null
+            enteredText.isNotEmpty() -> PinHasher.hash(enteredText)
+            else -> existingTextPassHash
+        }
+
         val soundId = selectedSoundId()
         val volume = selectedVolume()
         val selectedDays = dayChips.filterValues { it.isChecked }.keys
@@ -263,9 +331,12 @@ class GroupEditActivity : AppCompatActivity() {
                     groupId = groupId,
                     repeatDays = repeatDays,
                     soundId = soundId,
-                    requirePin = requirePin,
+                    requirePin = lockType == "pin",
                     pinHash = pinHash,
-                    volume = volume
+                    volume = volume,
+                    lockType = lockType,
+                    patternHash = patternHash,
+                    textPassHash = textPassHash
                 )
                 val id = dao.insert(alarm)
                 val saved = alarm.copy(id = id.toInt())

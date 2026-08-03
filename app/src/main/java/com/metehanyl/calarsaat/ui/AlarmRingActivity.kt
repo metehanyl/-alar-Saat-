@@ -4,7 +4,9 @@ import android.os.Build
 import android.os.Bundle
 import android.view.GestureDetector
 import android.view.MotionEvent
+import android.view.View
 import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import com.metehanyl.calarsaat.R
@@ -12,9 +14,12 @@ import com.metehanyl.calarsaat.alarm.AlarmRingingService
 import com.metehanyl.calarsaat.alarm.AlarmScheduler
 import com.metehanyl.calarsaat.alarm.EXTRA_ALARM_ID
 import com.metehanyl.calarsaat.alarm.EXTRA_ALARM_LABEL
+import com.metehanyl.calarsaat.alarm.EXTRA_ALARM_LOCK_TYPE
+import com.metehanyl.calarsaat.alarm.EXTRA_ALARM_PATTERN_HASH
 import com.metehanyl.calarsaat.alarm.EXTRA_ALARM_PIN_HASH
 import com.metehanyl.calarsaat.alarm.EXTRA_ALARM_REQUIRE_PIN
 import com.metehanyl.calarsaat.alarm.EXTRA_ALARM_SOUND_ID
+import com.metehanyl.calarsaat.alarm.EXTRA_ALARM_TEXT_PASS_HASH
 import com.metehanyl.calarsaat.alarm.EXTRA_ALARM_VOLUME
 import com.metehanyl.calarsaat.data.PinHasher
 import com.metehanyl.calarsaat.databinding.ActivityAlarmRingBinding
@@ -27,6 +32,9 @@ class AlarmRingActivity : AppCompatActivity() {
     private val enteredPin = StringBuilder()
     private val maxPinLength = 6
     private var pinHash: String? = null
+    private var patternHash: String? = null
+    private var textPassHash: String? = null
+    private var lockType = ""
     private var alarmId = -1
     private var soundId = 0
     private var volume = 100
@@ -69,23 +77,56 @@ class AlarmRingActivity : AppCompatActivity() {
         alarmId = intent.getIntExtra(EXTRA_ALARM_ID, -1)
         soundId = intent.getIntExtra(EXTRA_ALARM_SOUND_ID, 0)
         volume = intent.getIntExtra(EXTRA_ALARM_VOLUME, 100)
+        requirePin = intent.getBooleanExtra(EXTRA_ALARM_REQUIRE_PIN, false)
+        pinHash = intent.getStringExtra(EXTRA_ALARM_PIN_HASH)
+        patternHash = intent.getStringExtra(EXTRA_ALARM_PATTERN_HASH)
+        textPassHash = intent.getStringExtra(EXTRA_ALARM_TEXT_PASS_HASH)
+
+        // Use lockType from extra; fall back to requirePin for backward compat
+        val rawLockType = intent.getStringExtra(EXTRA_ALARM_LOCK_TYPE).orEmpty()
+        lockType = when {
+            rawLockType.isNotEmpty() -> rawLockType
+            requirePin -> "pin"
+            else -> ""
+        }
 
         val label = intent.getStringExtra(EXTRA_ALARM_LABEL).orEmpty()
         binding.textRingLabel.text = label
-        binding.textRingLabel.visibility =
-            if (label.isBlank()) android.view.View.GONE else android.view.View.VISIBLE
+        binding.textRingLabel.visibility = if (label.isBlank()) View.GONE else View.VISIBLE
         binding.textRingTime.text = currentTimeText()
 
-        requirePin = intent.getBooleanExtra(EXTRA_ALARM_REQUIRE_PIN, false)
-        pinHash = intent.getStringExtra(EXTRA_ALARM_PIN_HASH)
-        if (requirePin && pinHash != null) {
-            binding.layoutPinSection.visibility = android.view.View.VISIBLE
-            setupPinPad()
-        } else {
-            binding.layoutPinSection.visibility = android.view.View.GONE
+        when (lockType) {
+            "pin" -> {
+                if (pinHash != null) {
+                    binding.layoutPinSection.visibility = View.VISIBLE
+                    binding.textSwipeDismissHint.visibility = View.GONE
+                    setupPinPad()
+                } else {
+                    binding.textSwipeDismissHint.visibility = View.VISIBLE
+                }
+            }
+            "pattern" -> {
+                if (patternHash != null) {
+                    binding.layoutPatternSection.visibility = View.VISIBLE
+                    binding.textSwipeDismissHint.visibility = View.GONE
+                    setupPatternLock()
+                } else {
+                    binding.textSwipeDismissHint.visibility = View.VISIBLE
+                }
+            }
+            "text" -> {
+                if (textPassHash != null) {
+                    binding.layoutTextSection.visibility = View.VISIBLE
+                    binding.textSwipeDismissHint.visibility = View.GONE
+                    setupTextLock()
+                } else {
+                    binding.textSwipeDismissHint.visibility = View.VISIBLE
+                }
+            }
+            else -> {
+                binding.textSwipeDismissHint.visibility = View.VISIBLE
+            }
         }
-        binding.textSwipeDismissHint.visibility =
-            if (requirePin && pinHash != null) android.view.View.GONE else android.view.View.VISIBLE
 
         binding.root.setOnTouchListener { _, event ->
             gestureDetector.onTouchEvent(event)
@@ -131,7 +172,7 @@ class AlarmRingActivity : AppCompatActivity() {
         if (enteredPin.length >= maxPinLength) return
         enteredPin.append(digit)
         refreshPinDisplay()
-        binding.textRingError.visibility = android.view.View.INVISIBLE
+        binding.textRingError.visibility = View.INVISIBLE
 
         if (enteredPin.length >= 4) {
             if (pinHash == PinHasher.hash(enteredPin.toString())) {
@@ -152,7 +193,7 @@ class AlarmRingActivity : AppCompatActivity() {
     }
 
     private fun showWrongPin() {
-        binding.textRingError.visibility = android.view.View.VISIBLE
+        binding.textRingError.visibility = View.VISIBLE
         enteredPin.clear()
         refreshPinDisplay()
     }
@@ -161,8 +202,37 @@ class AlarmRingActivity : AppCompatActivity() {
         binding.textPinDots.text = "● ".repeat(enteredPin.length).trim()
     }
 
+    private fun setupPatternLock() {
+        binding.patternLockRing.onPatternComplete = { pattern ->
+            val hash = PinHasher.hash(pattern.joinToString(","))
+            if (hash == patternHash) {
+                dismissAlarm()
+            } else {
+                binding.textPatternError.visibility = View.VISIBLE
+                binding.patternLockRing.postDelayed({
+                    binding.textPatternError.visibility = View.INVISIBLE
+                }, 1500)
+            }
+        }
+    }
+
+    private fun setupTextLock() {
+        binding.buttonConfirmText.setOnClickListener {
+            val entered = binding.editRingTextPass.text?.toString().orEmpty()
+            if (PinHasher.hash(entered) == textPassHash) {
+                dismissAlarm()
+            } else {
+                binding.textTextError.visibility = View.VISIBLE
+                binding.editRingTextPass.text?.clear()
+                binding.buttonConfirmText.postDelayed({
+                    binding.textTextError.visibility = View.INVISIBLE
+                }, 1500)
+            }
+        }
+    }
+
     private fun onSwipeRight() {
-        if (!requirePin) dismissAlarm()
+        if (lockType.isEmpty()) dismissAlarm()
     }
 
     private fun onSwipeLeft() {
@@ -170,6 +240,7 @@ class AlarmRingActivity : AppCompatActivity() {
     }
 
     private fun dismissAlarm() {
+        hideKeyboard()
         AlarmRingingService.stop(this)
         finish()
     }
@@ -183,10 +254,18 @@ class AlarmRingActivity : AppCompatActivity() {
                 soundId = soundId,
                 requirePin = requirePin,
                 pinHash = pinHash,
-                volume = volume
+                volume = volume,
+                lockType = lockType,
+                patternHash = patternHash,
+                textPassHash = textPassHash
             )
         }
         finish()
+    }
+
+    private fun hideKeyboard() {
+        val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+        currentFocus?.let { imm.hideSoftInputFromWindow(it.windowToken, 0) }
     }
 
     override fun onDestroy() {

@@ -20,6 +20,9 @@ class AlarmReceiver : BroadcastReceiver() {
         val requirePin = intent.getBooleanExtra(EXTRA_ALARM_REQUIRE_PIN, false)
         val pinHash = intent.getStringExtra(EXTRA_ALARM_PIN_HASH)
         val volume = intent.getIntExtra(EXTRA_ALARM_VOLUME, 100)
+        val lockType = intent.getStringExtra(EXTRA_ALARM_LOCK_TYPE).orEmpty()
+        val patternHash = intent.getStringExtra(EXTRA_ALARM_PATTERN_HASH)
+        val textPassHash = intent.getStringExtra(EXTRA_ALARM_TEXT_PASS_HASH)
         val isSnooze = intent.getBooleanExtra(EXTRA_IS_SNOOZE, false)
         if (alarmId == -1) return
 
@@ -32,14 +35,12 @@ class AlarmReceiver : BroadcastReceiver() {
             putExtra(EXTRA_ALARM_REQUIRE_PIN, requirePin)
             putExtra(EXTRA_ALARM_PIN_HASH, pinHash)
             putExtra(EXTRA_ALARM_VOLUME, volume)
+            putExtra(EXTRA_ALARM_LOCK_TYPE, lockType)
+            putExtra(EXTRA_ALARM_PATTERN_HASH, patternHash)
+            putExtra(EXTRA_ALARM_TEXT_PASS_HASH, textPassHash)
         }
         ContextCompat.startForegroundService(context, ringIntent)
 
-        // Launch the ring screen directly rather than relying solely on the
-        // notification's full-screen intent: AlarmManager.setAlarmClock()
-        // broadcasts carry a brief background-activity-launch exemption, and
-        // some OEMs/Android 14 silently revoke USE_FULL_SCREEN_INTENT for
-        // sideloaded apps, which would otherwise leave the screen off.
         val activityIntent = Intent(context, AlarmRingActivity::class.java).apply {
             putExtra(EXTRA_ALARM_ID, alarmId)
             putExtra(EXTRA_ALARM_LABEL, label)
@@ -47,6 +48,9 @@ class AlarmReceiver : BroadcastReceiver() {
             putExtra(EXTRA_ALARM_REQUIRE_PIN, requirePin)
             putExtra(EXTRA_ALARM_PIN_HASH, pinHash)
             putExtra(EXTRA_ALARM_VOLUME, volume)
+            putExtra(EXTRA_ALARM_LOCK_TYPE, lockType)
+            putExtra(EXTRA_ALARM_PATTERN_HASH, patternHash)
+            putExtra(EXTRA_ALARM_TEXT_PASS_HASH, textPassHash)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_USER_ACTION)
         }
         context.startActivity(activityIntent)
@@ -72,10 +76,6 @@ class AlarmReceiver : BroadcastReceiver() {
         }
     }
 
-    // Forces the display on immediately, independent of whether the activity launch below
-    // succeeds: some OEMs (and Android 14's USE_FULL_SCREEN_INTENT revocation for sideloaded
-    // apps) can block starting an Activity from the background, which would otherwise leave
-    // the screen fully off even though the alarm is ringing.
     @Suppress("DEPRECATION")
     private fun wakeScreen(context: Context) {
         val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager

@@ -29,12 +29,28 @@
             android:orientation="vertical"
             android:padding="20dp">
 
-            <TimePicker
-                android:id="@+id/timePicker"
+            <!-- Tappable time display -->
+            <TextView
+                android:id="@+id/textTimeDisplay"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:timePickerMode="spinner" />
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="16dp"
+                android:textSize="64sp"
+                android:textStyle="bold"
+                android:textColor="?attr/colorPrimary"
+                tools:text="07:30" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/time_tap_to_change"
+                android:textSize="12sp"
+                android:textColor="?android:attr/textColorSecondary" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
@@ -146,28 +162,54 @@
                 android:max="100"
                 android:progress="100" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
+            <!-- Lock type selector -->
+            <TextView
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:gravity="center_vertical"
+                android:text="@string/lock_type_title"
+                android:textStyle="bold" />
+
+            <RadioGroup
+                android:id="@+id/radioGroupLockType"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 android:orientation="horizontal">
 
-                <TextView
+                <RadioButton
+                    android:id="@+id/radioLockNone"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/pin_enable_switch"
-                    android:textStyle="bold" />
+                    android:text="@string/lock_type_none"
+                    android:checked="true" />
 
-                <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/switchRequirePin"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-            </LinearLayout>
+                <RadioButton
+                    android:id="@+id/radioLockPin"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/lock_type_pin" />
 
+                <RadioButton
+                    android:id="@+id/radioLockPattern"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/lock_type_pattern" />
+
+                <RadioButton
+                    android:id="@+id/radioLockText"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/lock_type_text" />
+            </RadioGroup>
+
+            <!-- PIN lock section -->
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/layoutAlarmPin"
+                android:id="@+id/layoutLockPin"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
@@ -176,12 +218,57 @@
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/editAlarmPin"
+                    android:id="@+id/editLockPin"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/pin_entry_hint"
                     android:inputType="numberPassword"
                     android:maxLength="6" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Pattern lock section -->
+            <LinearLayout
+                android:id="@+id/layoutLockPattern"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/textPatternStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:text="@string/pattern_draw_hint"
+                    android:textColor="?android:attr/textColorSecondary"
+                    android:textSize="13sp" />
+
+                <com.metehanyl.calarsaat.ui.PatternLockView
+                    android:id="@+id/patternLockView"
+                    android:layout_width="260dp"
+                    android:layout_height="260dp"
+                    android:background="@drawable/bg_pattern_lock"
+                    android:padding="12dp" />
+            </LinearLayout>
+
+            <!-- Text password lock section -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutLockText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:visibility="gone"
+                app:passwordToggleEnabled="true"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editLockText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/text_pass_hint"
+                    android:inputType="textPassword" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <Button
