@@ -51,6 +51,11 @@
             android:theme="@style/Theme.CalarSaat" />
 
         <activity
+            android:name=".ui.IntervalGroupActivity"
+            android:exported="false"
+            android:theme="@style/Theme.CalarSaat" />
+
+        <activity
             android:name=".ui.AlarmRingActivity"
             android:exported="false"
             android:launchMode="singleInstance"

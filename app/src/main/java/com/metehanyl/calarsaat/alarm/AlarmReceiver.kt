@@ -23,6 +23,7 @@ class AlarmReceiver : BroadcastReceiver() {
         val lockType = intent.getStringExtra(EXTRA_ALARM_LOCK_TYPE).orEmpty()
         val patternHash = intent.getStringExtra(EXTRA_ALARM_PATTERN_HASH)
         val textPassHash = intent.getStringExtra(EXTRA_ALARM_TEXT_PASS_HASH)
+        val lockSteps = intent.getStringExtra(EXTRA_ALARM_LOCK_STEPS).orEmpty()
         val isSnooze = intent.getBooleanExtra(EXTRA_IS_SNOOZE, false)
         if (alarmId == -1) return
 
@@ -38,6 +39,7 @@ class AlarmReceiver : BroadcastReceiver() {
             putExtra(EXTRA_ALARM_LOCK_TYPE, lockType)
             putExtra(EXTRA_ALARM_PATTERN_HASH, patternHash)
             putExtra(EXTRA_ALARM_TEXT_PASS_HASH, textPassHash)
+            putExtra(EXTRA_ALARM_LOCK_STEPS, lockSteps)
         }
         ContextCompat.startForegroundService(context, ringIntent)
 
@@ -51,6 +53,7 @@ class AlarmReceiver : BroadcastReceiver() {
             putExtra(EXTRA_ALARM_LOCK_TYPE, lockType)
             putExtra(EXTRA_ALARM_PATTERN_HASH, patternHash)
             putExtra(EXTRA_ALARM_TEXT_PASS_HASH, textPassHash)
+            putExtra(EXTRA_ALARM_LOCK_STEPS, lockSteps)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_USER_ACTION)
         }
         context.startActivity(activityIntent)

@@ -25,11 +25,10 @@ import com.metehanyl.calarsaat.alarm.SabahNamaziResult
 import com.metehanyl.calarsaat.data.AlarmDatabase
 import com.metehanyl.calarsaat.data.AlarmEntity
 import com.metehanyl.calarsaat.data.AlarmGroupEntity
+import com.metehanyl.calarsaat.data.IntervalAlarmGroupEntity
 import com.metehanyl.calarsaat.data.PinHasher
 import com.metehanyl.calarsaat.data.PrefsManager
-import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.android.material.textfield.TextInputEditText
-import com.google.android.material.textfield.TextInputLayout
 import com.metehanyl.calarsaat.databinding.ActivityMainBinding
 import com.metehanyl.calarsaat.util.OemPermissionHelper
 import kotlinx.coroutines.flow.combine
@@ -40,8 +39,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var adapter: AlarmAdapter
     private lateinit var groupAdapter: AlarmGroupAdapter
+    private lateinit var intervalGroupAdapter: IntervalGroupAdapter
     private val dao by lazy { AlarmDatabase.getInstance(this).alarmDao() }
     private val groupDao by lazy { AlarmDatabase.getInstance(this).alarmGroupDao() }
+    private val intervalGroupDao by lazy { AlarmDatabase.getInstance(this).intervalAlarmGroupDao() }
     private val scheduler by lazy { AlarmScheduler(this) }
     private val prefs by lazy { PrefsManager(this) }
     private val sabahNamaziManager by lazy { SabahNamaziManager(this) }
@@ -93,6 +94,21 @@ class MainActivity : AppCompatActivity() {
         binding.recyclerGroups.adapter = groupAdapter
         binding.buttonAddGroup.setOnClickListener { onAddGroupClicked() }
 
+        intervalGroupAdapter = IntervalGroupAdapter(
+            onToggle = { group, checked -> onIntervalGroupToggled(group, checked) },
+            onClick = { group ->
+                startActivity(
+                    Intent(this, IntervalGroupActivity::class.java)
+                        .putExtra(IntervalGroupActivity.EXTRA_INTERVAL_GROUP_ID, group.id)
+                )
+            }
+        )
+        binding.recyclerIntervalGroups.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
+        binding.recyclerIntervalGroups.adapter = intervalGroupAdapter
+        binding.buttonAddIntervalGroup.setOnClickListener {
+            startActivity(Intent(this, IntervalGroupActivity::class.java))
+        }
+
         binding.fabAdd.setOnClickListener { onAddAlarmClicked() }
 
         binding.switchSabahNamazi.isChecked = prefs.isSabahNamaziEnabled()
@@ -106,15 +122,13 @@ class MainActivity : AppCompatActivity() {
         requestOemAutostartPermissionIfNeeded()
         observeAlarms()
         observeGroups()
+        observeIntervalGroups()
         observeSabahNamaziAlarms()
         healSabahNamaziStateIfNeeded()
     }
 
     override fun onResume() {
         super.onResume()
-        // Re-checked on every resume (not just first launch) because the user may have
-        // dismissed the prompt without granting it, or reinstalled the app, which revokes
-        // this special access again on Android 14+ for sideloaded apps.
         requestFullScreenIntentPermissionIfNeeded()
         requestBatteryOptimizationExemptionIfNeeded()
     }
@@ -152,17 +166,26 @@ class MainActivity : AppCompatActivity() {
         val editCount = view.findViewById<TextInputEditText>(R.id.editSabahCount)
         val editInterval = view.findViewById<TextInputEditText>(R.id.editSabahInterval)
         val editOffset = view.findViewById<TextInputEditText>(R.id.editSabahOffset)
-        val switchPin = view.findViewById<SwitchMaterial>(R.id.switchSabahPin)
-        val layoutPin = view.findViewById<TextInputLayout>(R.id.layoutSabahPin)
-        val editPin = view.findViewById<TextInputEditText>(R.id.editSabahPin)
         val seekVolume = view.findViewById<android.widget.SeekBar>(R.id.seekSabahVolume)
         val textVolumeValue = view.findViewById<android.widget.TextView>(R.id.textSabahVolumeValue)
+
+        val checkPin = view.findViewById<android.widget.CheckBox>(R.id.checkSabahLockPin)
+        val layoutPin = view.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.layoutSabahPin)
+        val editPin = view.findViewById<TextInputEditText>(R.id.editSabahPin)
+        val checkPattern = view.findViewById<android.widget.CheckBox>(R.id.checkSabahLockPattern)
+        val layoutPattern = view.findViewById<android.view.ViewGroup>(R.id.layoutSabahPattern)
+        val textPatternStatus = view.findViewById<android.widget.TextView>(R.id.textSabahPatternStatus)
+        val patternLockView = view.findViewById<PatternLockView>(R.id.patternLockViewSabah)
+        val checkText = view.findViewById<android.widget.CheckBox>(R.id.checkSabahLockText)
+        val layoutText = view.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.layoutSabahText)
+        val editText = view.findViewById<TextInputEditText>(R.id.editSabahText)
 
         editCount.setText(prefs.getSabahNamaziAlarmCount().toString())
         editInterval.setText(prefs.getSabahNamaziIntervalMinutes().toString())
         editOffset.setText(prefs.getSabahNamaziOffsetMinutes().toString())
         seekVolume.progress = prefs.getSabahNamaziVolume()
         textVolumeValue.text = getString(R.string.volume_value_format, seekVolume.progress)
+
         val dialogTonePlayer = AlarmTonePlayer()
         seekVolume.setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: android.widget.SeekBar, progress: Int, fromUser: Boolean) {
@@ -173,14 +196,47 @@ class MainActivity : AppCompatActivity() {
                 dialogTonePlayer.start(AlarmSounds.byId(0))
                 dialogTonePlayer.setVolume(seekBar.progress)
             }
-            override fun onStopTrackingTouch(seekBar: android.widget.SeekBar) {
-                dialogTonePlayer.stop()
-            }
+            override fun onStopTrackingTouch(seekBar: android.widget.SeekBar) { dialogTonePlayer.stop() }
         })
-        switchPin.isChecked = prefs.isSabahNamaziPinRequired()
-        layoutPin.visibility = if (switchPin.isChecked) View.VISIBLE else View.GONE
-        switchPin.setOnCheckedChangeListener { _, checked ->
+
+        val savedLockSteps = prefs.getSabahNamaziLockSteps()
+        val stepsList = if (savedLockSteps.isNotEmpty()) savedLockSteps.split(",") else emptyList()
+        val hasPinStep = "pin" in stepsList || (savedLockSteps.isEmpty() && prefs.isSabahNamaziPinRequired())
+        val hasPatternStep = "pattern" in stepsList
+        val hasTextStep = "text" in stepsList
+
+        var drawnSabahPattern: List<Int>? = null
+        val existingSabahPinHash = prefs.getSabahNamaziPinHash()
+        val existingSabahPatternHash = prefs.getSabahNamaziPatternHash()
+        val existingSabahTextHash = prefs.getSabahNamaziTextPassHash()
+
+        if (hasPinStep) {
+            checkPin.isChecked = true
+            layoutPin.visibility = View.VISIBLE
+        }
+        if (hasPatternStep) {
+            checkPattern.isChecked = true
+            layoutPattern.visibility = View.VISIBLE
+            textPatternStatus.text = getString(R.string.pattern_already_set)
+        }
+        if (hasTextStep) {
+            checkText.isChecked = true
+            layoutText.visibility = View.VISIBLE
+        }
+
+        checkPin.setOnCheckedChangeListener { _, checked ->
             layoutPin.visibility = if (checked) View.VISIBLE else View.GONE
+        }
+        checkPattern.setOnCheckedChangeListener { _, checked ->
+            layoutPattern.visibility = if (checked) View.VISIBLE else View.GONE
+        }
+        checkText.setOnCheckedChangeListener { _, checked ->
+            layoutText.visibility = if (checked) View.VISIBLE else View.GONE
+        }
+
+        patternLockView.onPatternComplete = { pattern ->
+            drawnSabahPattern = pattern
+            textPatternStatus.text = getString(R.string.pattern_set_ok)
         }
 
         val dialog = AlertDialog.Builder(this)
@@ -192,15 +248,35 @@ class MainActivity : AppCompatActivity() {
         dialog.setOnDismissListener { dialogTonePlayer.stop() }
         dialog.setOnShowListener {
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                val requirePin = switchPin.isChecked
+                val pinChecked = checkPin.isChecked
+                val patternChecked = checkPattern.isChecked
+                val textChecked = checkText.isChecked
                 val enteredPin = editPin.text?.toString().orEmpty().trim()
-                if (requirePin && enteredPin.isNotEmpty() && enteredPin.length < 4) {
-                    Snackbar.make(binding.root, R.string.pin_required_error, Snackbar.LENGTH_LONG).show()
+                val enteredText = editText.text?.toString().orEmpty()
+
+                if (pinChecked) {
+                    if (enteredPin.isNotEmpty() && enteredPin.length < 4) {
+                        Snackbar.make(binding.root, R.string.pin_required_error, Snackbar.LENGTH_LONG).show()
+                        return@setOnClickListener
+                    }
+                    if (enteredPin.isEmpty() && existingSabahPinHash == null) {
+                        Snackbar.make(binding.root, R.string.pin_required_error, Snackbar.LENGTH_LONG).show()
+                        return@setOnClickListener
+                    }
+                }
+                if (patternChecked && drawnSabahPattern == null && existingSabahPatternHash == null) {
+                    Snackbar.make(binding.root, R.string.pattern_not_set_error, Snackbar.LENGTH_LONG).show()
                     return@setOnClickListener
                 }
-                if (requirePin && enteredPin.isEmpty() && prefs.getSabahNamaziPinHash() == null) {
-                    Snackbar.make(binding.root, R.string.pin_required_error, Snackbar.LENGTH_LONG).show()
-                    return@setOnClickListener
+                if (textChecked) {
+                    if (enteredText.isNotEmpty() && (enteredText.length < 4 || enteredText.length > 10)) {
+                        Snackbar.make(binding.root, R.string.text_pass_length_error, Snackbar.LENGTH_LONG).show()
+                        return@setOnClickListener
+                    }
+                    if (enteredText.isEmpty() && existingSabahTextHash == null) {
+                        Snackbar.make(binding.root, R.string.text_pass_length_error, Snackbar.LENGTH_LONG).show()
+                        return@setOnClickListener
+                    }
                 }
 
                 val count = editCount.text?.toString()?.toIntOrNull()?.coerceIn(1, 10)
@@ -210,16 +286,31 @@ class MainActivity : AppCompatActivity() {
                 val offset = editOffset.text?.toString()?.toIntOrNull()?.coerceIn(0, 120)
                     ?: PrefsManager.DEFAULT_SABAH_OFFSET
 
+                val lockSteps = buildList {
+                    if (pinChecked) add("pin")
+                    if (patternChecked) add("pattern")
+                    if (textChecked) add("text")
+                }.joinToString(",")
+
+                val pinHash = if (pinChecked) {
+                    if (enteredPin.isNotEmpty()) PinHasher.hash(enteredPin) else existingSabahPinHash
+                } else null
+                val patternHash = if (patternChecked) {
+                    if (drawnSabahPattern != null) PinHasher.hash(drawnSabahPattern!!.joinToString(",")) else existingSabahPatternHash
+                } else null
+                val textHash = if (textChecked) {
+                    if (enteredText.isNotEmpty()) PinHasher.hash(enteredText) else existingSabahTextHash
+                } else null
+
                 prefs.setSabahNamaziAlarmCount(count)
                 prefs.setSabahNamaziIntervalMinutes(interval)
                 prefs.setSabahNamaziOffsetMinutes(offset)
                 prefs.setSabahNamaziVolume(seekVolume.progress.coerceIn(1, 100))
-                prefs.setSabahNamaziPinRequired(requirePin)
-                if (requirePin) {
-                    if (enteredPin.isNotEmpty()) prefs.setSabahNamaziPinHash(PinHasher.hash(enteredPin))
-                } else {
-                    prefs.setSabahNamaziPinHash(null)
-                }
+                prefs.setSabahNamaziLockSteps(lockSteps)
+                prefs.setSabahNamaziPinRequired(pinChecked)
+                prefs.setSabahNamaziPinHash(pinHash)
+                prefs.setSabahNamaziPatternHash(patternHash)
+                prefs.setSabahNamaziTextPassHash(textHash)
 
                 dialog.dismiss()
                 if (prefs.isSabahNamaziEnabled()) {
@@ -277,9 +368,6 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
                 is SabahNamaziResult.Failure -> {
-                    // Silent (auto-heal) failures must not flip the switch off or alarm the
-                    // user — prefs.isSabahNamaziEnabled() was never disabled, and the daily
-                    // refresh chain will simply retry tomorrow night.
                     if (!silent) {
                         resetSabahNamaziSwitch()
                         Snackbar.make(binding.root, result.message, Snackbar.LENGTH_LONG).show()
@@ -301,8 +389,7 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             dao.observeUngrouped().collect { alarms ->
                 adapter.submitList(alarms)
-                binding.emptyState.visibility = if (alarms.isEmpty()) android.view.View.VISIBLE
-                else android.view.View.GONE
+                binding.emptyState.visibility = if (alarms.isEmpty()) View.VISIBLE else View.GONE
             }
         }
     }
@@ -312,6 +399,14 @@ class MainActivity : AppCompatActivity() {
             combine(groupDao.observeAll(), dao.observeAll()) { groups, alarms ->
                 groups.map { group -> GroupWithAlarms(group, alarms.filter { it.groupId == group.id }) }
             }.collect { groupAdapter.submitList(it) }
+        }
+    }
+
+    private fun observeIntervalGroups() {
+        lifecycleScope.launch {
+            intervalGroupDao.observeAll().collect { groups ->
+                intervalGroupAdapter.submitList(groups)
+            }
         }
     }
 
@@ -340,6 +435,21 @@ class MainActivity : AppCompatActivity() {
     private fun onGroupToggled(group: GroupWithAlarms, enabled: Boolean) {
         lifecycleScope.launch {
             for (alarm in group.alarms) {
+                if (enabled) {
+                    val next = scheduler.schedule(alarm)
+                    dao.update(alarm.copy(enabled = true, nextTriggerAtMillis = next))
+                } else {
+                    scheduler.cancel(alarm)
+                    dao.update(alarm.copy(enabled = false))
+                }
+            }
+        }
+    }
+
+    private fun onIntervalGroupToggled(group: IntervalAlarmGroupEntity, enabled: Boolean) {
+        lifecycleScope.launch {
+            intervalGroupDao.update(group.copy(enabled = enabled))
+            for (alarm in dao.getByIntervalGroupId(group.id)) {
                 if (enabled) {
                     val next = scheduler.schedule(alarm)
                     dao.update(alarm.copy(enabled = true, nextTriggerAtMillis = next))
@@ -388,12 +498,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Xiaomi/Huawei/Oppo/Vivo/Samsung etc. kill backgrounded apps or block lock-screen pop-ups
-     * via their own app managers, which standard Android permissions can't grant. There's no API
-     * to query whether the user has actually whitelisted the app, so this is only shown once
-     * (revisit via Settings) rather than nagging on every resume.
-     */
     private fun requestOemAutostartPermissionIfNeeded() {
         if (prefs.isOemAutostartPromptShown()) return
         if (!OemPermissionHelper.isRestrictiveOem()) return
@@ -427,11 +531,6 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    /**
-     * Android 14+ silently revokes USE_FULL_SCREEN_INTENT for apps not installed via Play
-     * Store, which keeps the screen off when an alarm rings while locked. The user must grant
-     * it manually via this special-access settings screen.
-     */
     private fun requestFullScreenIntentPermissionIfNeeded() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) return
         if (NotificationManagerCompat.from(this).canUseFullScreenIntent()) return

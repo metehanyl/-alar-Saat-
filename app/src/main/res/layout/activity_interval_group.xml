@@ -38,37 +38,80 @@
                     android:id="@+id/editGroupName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/group_name_hint" />
+                    android:hint="@string/interval_group_name_hint" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <Button
-                android:id="@+id/buttonAddTime"
+            <!-- Start time -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@string/interval_start_time_label"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/textIntervalStartTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="4dp"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="12dp"
+                android:textSize="48sp"
+                android:textStyle="bold"
+                android:textColor="?attr/colorPrimary"
+                tools:text="07:00" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/interval_start_time_hint"
+                android:textSize="12sp"
+                android:textColor="?android:attr/textColorSecondary" />
+
+            <!-- Interval and count -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="@string/add_time_button"
-                style="@style/Widget.Material3.Button.TextButton" />
+                android:orientation="horizontal">
 
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:minHeight="80dp">
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/recyclerTimes"
-                    android:layout_width="match_parent"
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    tools:listitem="@layout/item_group_time" />
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
-                <TextView
-                    android:id="@+id/emptyTimesHint"
-                    android:layout_width="wrap_content"
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/editIntervalMinutes"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/interval_minutes_hint"
+                        android:inputType="number"
+                        android:maxLength="4" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:text="@string/group_no_times_hint"
-                    android:textColor="?android:attr/textColorSecondary" />
-            </FrameLayout>
+                    android:layout_weight="1"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/editAlarmCount"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/interval_count_hint"
+                        android:inputType="number"
+                        android:maxLength="4" />
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+
+            <!-- Repeat days -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -77,12 +120,13 @@
                 android:textStyle="bold" />
 
             <com.google.android.material.chip.ChipGroup
-                android:id="@+id/chipGroupGroupDays"
+                android:id="@+id/chipGroupDays"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 app:singleLine="false" />
 
+            <!-- Melody -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -91,52 +135,53 @@
                 android:textStyle="bold" />
 
             <RadioGroup
-                android:id="@+id/radioGroupGroupMelody"
+                android:id="@+id/radioGroupMelody"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:orientation="vertical">
 
                 <RadioButton
-                    android:id="@+id/radioGroupMelody0"
+                    android:id="@+id/radioMelody0"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/melody_classic"
                     android:checked="true" />
 
                 <RadioButton
-                    android:id="@+id/radioGroupMelody1"
+                    android:id="@+id/radioMelody1"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/melody_digital" />
 
                 <RadioButton
-                    android:id="@+id/radioGroupMelody2"
+                    android:id="@+id/radioMelody2"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/melody_triplet" />
 
                 <RadioButton
-                    android:id="@+id/radioGroupMelody3"
+                    android:id="@+id/radioMelody3"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/melody_rising" />
 
                 <RadioButton
-                    android:id="@+id/radioGroupMelody4"
+                    android:id="@+id/radioMelody4"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/melody_siren" />
             </RadioGroup>
 
             <Button
-                android:id="@+id/buttonPreviewGroupMelody"
+                android:id="@+id/buttonPreviewMelody"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="@string/melody_preview"
                 style="@style/Widget.Material3.Button.TextButton" />
 
+            <!-- Volume -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -151,14 +196,14 @@
                     android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/textGroupVolumeValue"
+                    android:id="@+id/textVolumeValue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     tools:text="100%" />
             </LinearLayout>
 
             <SeekBar
-                android:id="@+id/seekGroupVolume"
+                android:id="@+id/seekVolume"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
@@ -166,7 +211,7 @@
                 android:max="100"
                 android:progress="100" />
 
-            <!-- Lock steps (multi-step, each checkbox independent) -->
+            <!-- Lock steps -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -184,14 +229,14 @@
 
             <!-- PIN step -->
             <CheckBox
-                android:id="@+id/checkGroupLockPin"
+                android:id="@+id/checkLockPin"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="@string/lock_type_pin" />
 
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/layoutGroupLockPin"
+                android:id="@+id/layoutLockPin"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
@@ -200,7 +245,7 @@
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/editGroupLockPin"
+                    android:id="@+id/editLockPin"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/pin_entry_hint"
@@ -210,14 +255,14 @@
 
             <!-- Pattern step -->
             <CheckBox
-                android:id="@+id/checkGroupLockPattern"
+                android:id="@+id/checkLockPattern"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="@string/lock_type_pattern" />
 
             <LinearLayout
-                android:id="@+id/layoutGroupLockPattern"
+                android:id="@+id/layoutLockPattern"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
@@ -226,7 +271,7 @@
                 android:visibility="gone">
 
                 <TextView
-                    android:id="@+id/textGroupPatternStatus"
+                    android:id="@+id/textPatternStatus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
@@ -235,7 +280,7 @@
                     android:textSize="13sp" />
 
                 <com.metehanyl.calarsaat.ui.PatternLockView
-                    android:id="@+id/patternLockViewGroup"
+                    android:id="@+id/patternLockView"
                     android:layout_width="260dp"
                     android:layout_height="260dp"
                     android:background="@drawable/bg_pattern_lock"
@@ -244,14 +289,14 @@
 
             <!-- Text step -->
             <CheckBox
-                android:id="@+id/checkGroupLockText"
+                android:id="@+id/checkLockText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="@string/lock_type_text" />
 
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/layoutGroupLockText"
+                android:id="@+id/layoutLockText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
@@ -260,7 +305,7 @@
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/editGroupLockText"
+                    android:id="@+id/editLockText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/text_pass_hint"
@@ -281,7 +326,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:text="@string/group_delete_button"
+                android:text="@string/interval_group_delete_button"
                 android:textColor="@android:color/holo_red_light"
                 android:visibility="gone"
                 style="@style/Widget.Material3.Button.TextButton" />

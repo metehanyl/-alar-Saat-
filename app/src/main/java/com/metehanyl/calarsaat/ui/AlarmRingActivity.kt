@@ -17,6 +17,7 @@ import com.metehanyl.calarsaat.alarm.AlarmRingingService
 import com.metehanyl.calarsaat.alarm.AlarmScheduler
 import com.metehanyl.calarsaat.alarm.EXTRA_ALARM_ID
 import com.metehanyl.calarsaat.alarm.EXTRA_ALARM_LABEL
+import com.metehanyl.calarsaat.alarm.EXTRA_ALARM_LOCK_STEPS
 import com.metehanyl.calarsaat.alarm.EXTRA_ALARM_LOCK_TYPE
 import com.metehanyl.calarsaat.alarm.EXTRA_ALARM_PATTERN_HASH
 import com.metehanyl.calarsaat.alarm.EXTRA_ALARM_PIN_HASH
@@ -37,7 +38,8 @@ class AlarmRingActivity : AppCompatActivity() {
     private var pinHash: String? = null
     private var patternHash: String? = null
     private var textPassHash: String? = null
-    private var lockType = ""
+    private var lockSteps: List<String> = emptyList()
+    private var currentLockStep = 0
     private var alarmId = -1
     private var soundId = 0
     private var volume = 100
@@ -85,12 +87,16 @@ class AlarmRingActivity : AppCompatActivity() {
         patternHash = intent.getStringExtra(EXTRA_ALARM_PATTERN_HASH)
         textPassHash = intent.getStringExtra(EXTRA_ALARM_TEXT_PASS_HASH)
 
-        // Use lockType from extra; fall back to requirePin for backward compat
-        val rawLockType = intent.getStringExtra(EXTRA_ALARM_LOCK_TYPE).orEmpty()
-        lockType = when {
-            rawLockType.isNotEmpty() -> rawLockType
-            requirePin -> "pin"
-            else -> ""
+        val rawSteps = intent.getStringExtra(EXTRA_ALARM_LOCK_STEPS).orEmpty()
+        lockSteps = if (rawSteps.isNotEmpty()) {
+            rawSteps.split(",").filter { it.isNotEmpty() }
+        } else {
+            val rawLockType = intent.getStringExtra(EXTRA_ALARM_LOCK_TYPE).orEmpty()
+            when {
+                rawLockType.isNotEmpty() -> listOf(rawLockType)
+                requirePin -> listOf("pin")
+                else -> emptyList()
+            }
         }
 
         val label = intent.getStringExtra(EXTRA_ALARM_LABEL).orEmpty()
@@ -98,36 +104,11 @@ class AlarmRingActivity : AppCompatActivity() {
         binding.textRingLabel.visibility = if (label.isBlank()) View.GONE else View.VISIBLE
         binding.textRingTime.text = currentTimeText()
 
-        when (lockType) {
-            "pin" -> {
-                if (pinHash != null) {
-                    binding.layoutPinSection.visibility = View.VISIBLE
-                    binding.textSwipeDismissHint.visibility = View.GONE
-                    setupPinPad()
-                } else {
-                    binding.textSwipeDismissHint.visibility = View.VISIBLE
-                }
-            }
-            "pattern" -> {
-                if (patternHash != null) {
-                    binding.layoutPatternSection.visibility = View.VISIBLE
-                    binding.textSwipeDismissHint.visibility = View.GONE
-                    setupPatternLock()
-                } else {
-                    binding.textSwipeDismissHint.visibility = View.VISIBLE
-                }
-            }
-            "text" -> {
-                if (textPassHash != null) {
-                    binding.textSwipeDismissHint.visibility = View.GONE
-                    showTextPasswordDialog()
-                } else {
-                    binding.textSwipeDismissHint.visibility = View.VISIBLE
-                }
-            }
-            else -> {
-                binding.textSwipeDismissHint.visibility = View.VISIBLE
-            }
+        if (lockSteps.isEmpty()) {
+            binding.textSwipeDismissHint.visibility = View.VISIBLE
+        } else {
+            binding.textSwipeDismissHint.visibility = View.GONE
+            showCurrentLockStep()
         }
 
         binding.root.setOnTouchListener { _, event ->
@@ -156,6 +137,38 @@ class AlarmRingActivity : AppCompatActivity() {
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
+    private fun showCurrentLockStep() {
+        binding.layoutPinSection.visibility = View.GONE
+        binding.layoutPatternSection.visibility = View.GONE
+
+        val step = lockSteps.getOrNull(currentLockStep) ?: run { dismissAlarm(); return }
+        when (step) {
+            "pin" -> {
+                binding.layoutPinSection.visibility = View.VISIBLE
+                enteredPin.clear()
+                refreshPinDisplay()
+                binding.textRingError.visibility = View.INVISIBLE
+                setupPinPad()
+            }
+            "pattern" -> {
+                binding.layoutPatternSection.visibility = View.VISIBLE
+                binding.patternLockRing.clear()
+                binding.textPatternError.visibility = View.INVISIBLE
+                setupPatternLock()
+            }
+            "text" -> showTextPasswordDialog()
+        }
+    }
+
+    private fun onStepPassed() {
+        currentLockStep++
+        if (currentLockStep >= lockSteps.size) {
+            dismissAlarm()
+        } else {
+            showCurrentLockStep()
+        }
+    }
+
     private fun setupPinPad() {
         val digitButtons = mapOf(
             binding.button0 to "0", binding.button1 to "1", binding.button2 to "2",
@@ -178,7 +191,7 @@ class AlarmRingActivity : AppCompatActivity() {
 
         if (enteredPin.length >= 4) {
             if (pinHash == PinHasher.hash(enteredPin.toString())) {
-                dismissAlarm()
+                onStepPassed()
                 return
             }
             if (enteredPin.length == maxPinLength) {
@@ -208,7 +221,7 @@ class AlarmRingActivity : AppCompatActivity() {
         binding.patternLockRing.onPatternComplete = { pattern ->
             val hash = PinHasher.hash(pattern.joinToString(","))
             if (hash == patternHash) {
-                dismissAlarm()
+                onStepPassed()
             } else {
                 binding.textPatternError.visibility = View.VISIBLE
                 binding.patternLockRing.postDelayed({
@@ -235,7 +248,7 @@ class AlarmRingActivity : AppCompatActivity() {
             val entered = input.text.toString()
             if (PinHasher.hash(entered) == textPassHash) {
                 dialog.dismiss()
-                dismissAlarm()
+                onStepPassed()
             } else {
                 input.text.clear()
                 input.error = getString(R.string.ring_text_wrong)
@@ -244,7 +257,7 @@ class AlarmRingActivity : AppCompatActivity() {
     }
 
     private fun onSwipeRight() {
-        if (lockType.isEmpty()) dismissAlarm()
+        if (lockSteps.isEmpty()) dismissAlarm()
     }
 
     private fun onSwipeLeft() {
@@ -267,9 +280,10 @@ class AlarmRingActivity : AppCompatActivity() {
                 requirePin = requirePin,
                 pinHash = pinHash,
                 volume = volume,
-                lockType = lockType,
+                lockType = lockSteps.firstOrNull() ?: "",
                 patternHash = patternHash,
-                textPassHash = textPassHash
+                textPassHash = textPassHash,
+                lockSteps = lockSteps.joinToString(",")
             )
         }
         finish()

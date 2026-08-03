@@ -59,6 +59,24 @@ class PrefsManager(context: Context) {
         prefs.edit().putInt(KEY_SABAH_VOLUME, volume).apply()
     }
 
+    fun getSabahNamaziLockSteps(): String = prefs.getString(KEY_SABAH_LOCK_STEPS, "").orEmpty()
+
+    fun setSabahNamaziLockSteps(lockSteps: String) {
+        prefs.edit().putString(KEY_SABAH_LOCK_STEPS, lockSteps).apply()
+    }
+
+    fun getSabahNamaziPatternHash(): String? = prefs.getString(KEY_SABAH_PATTERN_HASH, null)
+
+    fun setSabahNamaziPatternHash(hash: String?) {
+        prefs.edit().putString(KEY_SABAH_PATTERN_HASH, hash).apply()
+    }
+
+    fun getSabahNamaziTextPassHash(): String? = prefs.getString(KEY_SABAH_TEXT_PASS_HASH, null)
+
+    fun setSabahNamaziTextPassHash(hash: String?) {
+        prefs.edit().putString(KEY_SABAH_TEXT_PASS_HASH, hash).apply()
+    }
+
     fun isOemAutostartPromptShown(): Boolean = prefs.getBoolean(KEY_OEM_AUTOSTART_PROMPT_SHOWN, false)
 
     fun setOemAutostartPromptShown(shown: Boolean) {
@@ -74,6 +92,9 @@ class PrefsManager(context: Context) {
         private const val KEY_SABAH_REQUIRE_PIN = "sabah_namazi_require_pin"
         private const val KEY_SABAH_PIN_HASH = "sabah_namazi_pin_hash"
         private const val KEY_SABAH_VOLUME = "sabah_namazi_volume"
+        private const val KEY_SABAH_LOCK_STEPS = "sabah_namazi_lock_steps"
+        private const val KEY_SABAH_PATTERN_HASH = "sabah_namazi_pattern_hash"
+        private const val KEY_SABAH_TEXT_PASS_HASH = "sabah_namazi_text_pass_hash"
         private const val KEY_OEM_AUTOSTART_PROMPT_SHOWN = "oem_autostart_prompt_shown"
 
         // Default settings reproduce the original fixed behavior: imsak+10, +14, +18.

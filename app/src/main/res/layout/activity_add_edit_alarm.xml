@@ -162,57 +162,35 @@
                 android:max="100"
                 android:progress="100" />
 
-            <!-- Lock type selector -->
+            <!-- Lock steps (multi-step, each checkbox independent) -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:text="@string/lock_type_title"
+                android:text="@string/lock_steps_title"
                 android:textStyle="bold" />
 
-            <RadioGroup
-                android:id="@+id/radioGroupLockType"
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/lock_steps_hint"
+                android:textColor="?android:attr/textColorSecondary"
+                android:textSize="12sp" />
+
+            <!-- PIN step -->
+            <CheckBox
+                android:id="@+id/checkLockPin"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:orientation="horizontal">
+                android:text="@string/lock_type_pin" />
 
-                <RadioButton
-                    android:id="@+id/radioLockNone"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/lock_type_none"
-                    android:checked="true" />
-
-                <RadioButton
-                    android:id="@+id/radioLockPin"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/lock_type_pin" />
-
-                <RadioButton
-                    android:id="@+id/radioLockPattern"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/lock_type_pattern" />
-
-                <RadioButton
-                    android:id="@+id/radioLockText"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/lock_type_text" />
-            </RadioGroup>
-
-            <!-- PIN lock section -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/layoutLockPin"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="4dp"
                 android:visibility="gone"
                 app:passwordToggleEnabled="true"
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
@@ -226,12 +204,19 @@
                     android:maxLength="6" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Pattern lock section -->
+            <!-- Pattern step -->
+            <CheckBox
+                android:id="@+id/checkLockPattern"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/lock_type_pattern" />
+
             <LinearLayout
                 android:id="@+id/layoutLockPattern"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="4dp"
                 android:gravity="center_horizontal"
                 android:orientation="vertical"
                 android:visibility="gone">
@@ -253,12 +238,19 @@
                     android:padding="12dp" />
             </LinearLayout>
 
-            <!-- Text password lock section -->
+            <!-- Text step -->
+            <CheckBox
+                android:id="@+id/checkLockText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/lock_type_text" />
+
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/layoutLockText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="4dp"
                 android:visibility="gone"
                 app:passwordToggleEnabled="true"
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
@@ -268,7 +260,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/text_pass_hint"
-                    android:inputType="textPassword" />
+                    android:inputType="textPassword"
+                    android:maxLength="10" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <Button

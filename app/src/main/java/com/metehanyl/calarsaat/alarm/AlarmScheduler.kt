@@ -17,6 +17,7 @@ const val EXTRA_IS_SNOOZE = "extra_is_snooze"
 const val EXTRA_ALARM_LOCK_TYPE = "extra_alarm_lock_type"
 const val EXTRA_ALARM_PATTERN_HASH = "extra_alarm_pattern_hash"
 const val EXTRA_ALARM_TEXT_PASS_HASH = "extra_alarm_text_pass_hash"
+const val EXTRA_ALARM_LOCK_STEPS = "extra_alarm_lock_steps"
 
 class AlarmScheduler(private val context: Context) {
 
@@ -50,10 +51,13 @@ class AlarmScheduler(private val context: Context) {
         lockType: String = "",
         patternHash: String? = null,
         textPassHash: String? = null,
+        lockSteps: String = "",
         minutes: Int = SNOOZE_MINUTES
     ): Long {
         val triggerAt = System.currentTimeMillis() + minutes * 60_000L
         val requestCode = snoozeRequestCode(alarmId)
+
+        val effectiveSteps = lockSteps.ifEmpty { lockType }
 
         val intent = Intent(context, AlarmReceiver::class.java).apply {
             putExtra(EXTRA_ALARM_ID, alarmId)
@@ -65,6 +69,7 @@ class AlarmScheduler(private val context: Context) {
             putExtra(EXTRA_ALARM_LOCK_TYPE, lockType)
             putExtra(EXTRA_ALARM_PATTERN_HASH, patternHash)
             putExtra(EXTRA_ALARM_TEXT_PASS_HASH, textPassHash)
+            putExtra(EXTRA_ALARM_LOCK_STEPS, effectiveSteps)
             putExtra(EXTRA_IS_SNOOZE, true)
         }
         val pendingIntent = PendingIntent.getBroadcast(
@@ -83,6 +88,7 @@ class AlarmScheduler(private val context: Context) {
     private fun snoozeRequestCode(alarmId: Int) = alarmId + SNOOZE_REQUEST_CODE_OFFSET
 
     private fun buildPendingIntent(alarm: AlarmEntity): PendingIntent {
+        val steps = alarm.effectiveLockSteps().joinToString(",")
         val intent = Intent(context, AlarmReceiver::class.java).apply {
             putExtra(EXTRA_ALARM_ID, alarm.id)
             putExtra(EXTRA_ALARM_LABEL, alarm.label)
@@ -93,6 +99,7 @@ class AlarmScheduler(private val context: Context) {
             putExtra(EXTRA_ALARM_LOCK_TYPE, alarm.effectiveLockType())
             putExtra(EXTRA_ALARM_PATTERN_HASH, alarm.patternHash)
             putExtra(EXTRA_ALARM_TEXT_PASS_HASH, alarm.textPassHash)
+            putExtra(EXTRA_ALARM_LOCK_STEPS, steps)
         }
         return PendingIntent.getBroadcast(
             context, alarm.id, intent,

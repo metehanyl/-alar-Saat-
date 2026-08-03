@@ -1,125 +1,194 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:paddingStart="24dp"
-    android:paddingTop="8dp"
-    android:paddingEnd="24dp"
-    android:paddingBottom="8dp">
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/editSabahCount"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/sabah_namazi_count_hint"
-            android:inputType="number"
-            android:maxLength="2" />
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/editSabahInterval"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/sabah_namazi_interval_hint"
-            android:inputType="number"
-            android:maxLength="3" />
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/editSabahOffset"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/sabah_namazi_offset_hint"
-            android:inputType="number"
-            android:maxLength="3" />
-    </com.google.android.material.textfield.TextInputLayout>
+    android:layout_height="wrap_content">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="vertical"
+        android:paddingStart="24dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="24dp"
+        android:paddingBottom="8dp">
 
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/volume_title"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/textSabahVolumeValue"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            tools:text="100%" />
-    </LinearLayout>
-
-    <SeekBar
-        android:id="@+id/seekSabahVolume"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:min="1"
-        android:max="100"
-        android:progress="100" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/pin_enable_switch"
-            android:textStyle="bold" />
-
-        <com.google.android.material.switchmaterial.SwitchMaterial
-            android:id="@+id/switchSabahPin"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-    </LinearLayout>
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/layoutSabahPin"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:visibility="gone"
-        app:passwordToggleEnabled="true"
-        style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/editSabahPin"
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/pin_entry_hint"
-            android:inputType="numberPassword"
-            android:maxLength="6" />
-    </com.google.android.material.textfield.TextInputLayout>
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
-</LinearLayout>
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editSabahCount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/sabah_namazi_count_hint"
+                android:inputType="number"
+                android:maxLength="2" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editSabahInterval"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/sabah_namazi_interval_hint"
+                android:inputType="number"
+                android:maxLength="3" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editSabahOffset"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/sabah_namazi_offset_hint"
+                android:inputType="number"
+                android:maxLength="3" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/volume_title"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/textSabahVolumeValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="100%" />
+        </LinearLayout>
+
+        <SeekBar
+            android:id="@+id/seekSabahVolume"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:min="1"
+            android:max="100"
+            android:progress="100" />
+
+        <!-- Lock steps -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/lock_steps_title"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="@string/lock_steps_hint"
+            android:textColor="?android:attr/textColorSecondary"
+            android:textSize="12sp" />
+
+        <!-- PIN step -->
+        <CheckBox
+            android:id="@+id/checkSabahLockPin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/lock_type_pin" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/layoutSabahPin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:visibility="gone"
+            app:passwordToggleEnabled="true"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editSabahPin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/pin_entry_hint"
+                android:inputType="numberPassword"
+                android:maxLength="6" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Pattern step -->
+        <CheckBox
+            android:id="@+id/checkSabahLockPattern"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/lock_type_pattern" />
+
+        <LinearLayout
+            android:id="@+id/layoutSabahPattern"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/textSabahPatternStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="@string/pattern_draw_hint"
+                android:textColor="?android:attr/textColorSecondary"
+                android:textSize="13sp" />
+
+            <com.metehanyl.calarsaat.ui.PatternLockView
+                android:id="@+id/patternLockViewSabah"
+                android:layout_width="220dp"
+                android:layout_height="220dp"
+                android:background="@drawable/bg_pattern_lock"
+                android:padding="12dp" />
+        </LinearLayout>
+
+        <!-- Text step -->
+        <CheckBox
+            android:id="@+id/checkSabahLockText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/lock_type_text" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/layoutSabahText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:visibility="gone"
+            app:passwordToggleEnabled="true"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editSabahText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/text_pass_hint"
+                android:inputType="textPassword"
+                android:maxLength="10" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+    </LinearLayout>
+</ScrollView>

@@ -21,7 +21,9 @@ data class AlarmEntity(
     val volume: Int = 100,
     val lockType: String = "",
     val patternHash: String? = null,
-    val textPassHash: String? = null
+    val textPassHash: String? = null,
+    val lockSteps: String = "",
+    val intervalGroupId: Int = -1
 ) {
     fun repeatDaysSet(): Set<Int> =
         if (repeatDays.isBlank()) emptySet()
@@ -29,10 +31,13 @@ data class AlarmEntity(
 
     fun isRepeating(): Boolean = repeatDays.isNotBlank()
 
-    fun effectiveLockType(): String = when {
-        lockType.isNotEmpty() -> lockType
-        requirePin -> "pin"
-        else -> ""
+    fun effectiveLockType(): String = effectiveLockSteps().firstOrNull() ?: ""
+
+    fun effectiveLockSteps(): List<String> {
+        if (lockSteps.isNotEmpty()) return lockSteps.split(",").filter { it.isNotEmpty() }
+        if (lockType.isNotEmpty()) return listOf(lockType)
+        if (requirePin) return listOf("pin")
+        return emptyList()
     }
 
     companion object {

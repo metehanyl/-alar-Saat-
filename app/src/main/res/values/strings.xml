@@ -99,8 +99,9 @@
     <string name="pattern_not_set_error">Şekil çizin</string>
     <string name="pattern_too_short_error">En az 4 nokta bağlayın</string>
 
-    <string name="text_pass_hint">Metin şifresi (en az 4 karakter)</string>
+    <string name="text_pass_hint">Metin şifresi (4-10 karakter)</string>
     <string name="text_pass_too_short_error">Şifre en az 4 karakter olmalı</string>
+    <string name="text_pass_length_error">Metin şifresi 4-10 karakter arasında olmalı</string>
 
     <string name="ring_dismiss_hint_pattern">Kapatmak için şekil çizin</string>
     <string name="ring_dismiss_hint_text">Kapatmak için şifreyi girin</string>
@@ -108,4 +109,22 @@
     <string name="ring_text_wrong">Yanlış şifre</string>
     <string name="ring_confirm_button">Onayla</string>
     <string name="time_tap_to_change">Saati değiştirmek için dokunun</string>
+
+    <string name="lock_steps_title">Kilitleme Adımları</string>
+    <string name="lock_steps_hint">Alarm kapatma için istediğiniz adımları seçin (sırayla uygulanır)</string>
+
+    <string name="interval_groups_title">Aralıklı Gruplar</string>
+    <string name="new_interval_group_title">Yeni Aralıklı Grup</string>
+    <string name="edit_interval_group_title">Aralıklı Grubu Düzenle</string>
+    <string name="interval_group_name_hint">Grup adı</string>
+    <string name="interval_start_time_label">Başlangıç Saati</string>
+    <string name="interval_start_time_hint">Saati değiştirmek için dokunun</string>
+    <string name="interval_minutes_hint">Alarmlar arası dakika</string>
+    <string name="interval_count_hint">Alarm sayısı (1-1000)</string>
+    <string name="interval_group_delete_button">Grubu Sil</string>
+    <string name="interval_group_delete_confirm">Bu grubu ve içindeki tüm alarmları silmek istiyor musunuz?</string>
+    <string name="interval_count_error">Alarm sayısı 1 ile 1000 arasında olmalı</string>
+    <string name="interval_minutes_error">Aralık en az 1 dakika olmalı</string>
+    <string name="interval_group_alarm_count">%1$d alarm</string>
+    <string name="interval_group_detail">%1$s başlar, her %2$d dk, %3$d alarm</string>
 </resources>

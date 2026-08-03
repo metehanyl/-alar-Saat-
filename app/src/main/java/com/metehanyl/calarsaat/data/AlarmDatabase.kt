@@ -7,11 +7,16 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [AlarmEntity::class, AlarmGroupEntity::class], version = 7, exportSchema = false)
+@Database(
+    entities = [AlarmEntity::class, AlarmGroupEntity::class, IntervalAlarmGroupEntity::class],
+    version = 8,
+    exportSchema = false
+)
 abstract class AlarmDatabase : RoomDatabase() {
 
     abstract fun alarmDao(): AlarmDao
     abstract fun alarmGroupDao(): AlarmGroupDao
+    abstract fun intervalAlarmGroupDao(): IntervalAlarmGroupDao
 
     companion object {
         const val MAX_ALARMS = 100_000
@@ -59,6 +64,35 @@ abstract class AlarmDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE alarms ADD COLUMN lockSteps TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE alarms ADD COLUMN intervalGroupId INTEGER NOT NULL DEFAULT -1")
+                // Migrate existing single lockType to lockSteps
+                db.execSQL("UPDATE alarms SET lockSteps = lockType WHERE lockType != ''")
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS interval_alarm_groups (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        name TEXT NOT NULL,
+                        startHour INTEGER NOT NULL DEFAULT 7,
+                        startMinute INTEGER NOT NULL DEFAULT 0,
+                        intervalMinutes INTEGER NOT NULL DEFAULT 10,
+                        alarmCount INTEGER NOT NULL DEFAULT 3,
+                        repeatDays TEXT NOT NULL DEFAULT '',
+                        soundId INTEGER NOT NULL DEFAULT 0,
+                        volume INTEGER NOT NULL DEFAULT 100,
+                        enabled INTEGER NOT NULL DEFAULT 1,
+                        lockSteps TEXT NOT NULL DEFAULT '',
+                        pinHash TEXT,
+                        patternHash TEXT,
+                        textPassHash TEXT
+                    )
+                    """.trimIndent()
+                )
+            }
+        }
+
         @Volatile
         private var INSTANCE: AlarmDatabase? = null
 
@@ -68,8 +102,10 @@ abstract class AlarmDatabase : RoomDatabase() {
                     context.applicationContext,
                     AlarmDatabase::class.java,
                     "alarms.db"
-                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
-                    .build().also { INSTANCE = it }
+                ).addMigrations(
+                    MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4,
+                    MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8
+                ).build().also { INSTANCE = it }
             }
     }
 }

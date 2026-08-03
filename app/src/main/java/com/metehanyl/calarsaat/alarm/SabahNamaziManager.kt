@@ -41,9 +41,17 @@ class SabahNamaziManager(private val context: Context) {
         val count = prefs.getSabahNamaziAlarmCount().coerceIn(1, 10)
         val interval = prefs.getSabahNamaziIntervalMinutes().coerceIn(1, 60)
         val offset = prefs.getSabahNamaziOffsetMinutes().coerceIn(0, 120)
-        val requirePin = prefs.isSabahNamaziPinRequired()
-        val pinHash = prefs.getSabahNamaziPinHash().takeIf { requirePin }
         val volume = prefs.getSabahNamaziVolume()
+
+        val lockSteps = run {
+            val saved = prefs.getSabahNamaziLockSteps()
+            if (saved.isNotEmpty()) saved
+            else if (prefs.isSabahNamaziPinRequired()) "pin"
+            else ""
+        }
+        val pinHash = if ("pin" in lockSteps.split(",")) prefs.getSabahNamaziPinHash() else null
+        val patternHash = if ("pattern" in lockSteps.split(",")) prefs.getSabahNamaziPatternHash() else null
+        val textPassHash = if ("text" in lockSteps.split(",")) prefs.getSabahNamaziTextPassHash() else null
 
         val times = mutableListOf<Pair<Int, Int>>()
         for (i in 0 until count) {
@@ -60,7 +68,10 @@ class SabahNamaziManager(private val context: Context) {
                 isAutoSabahNamazi = true,
                 requirePin = pinHash != null,
                 pinHash = pinHash,
-                volume = volume
+                volume = volume,
+                lockSteps = lockSteps,
+                patternHash = patternHash,
+                textPassHash = textPassHash
             )
             val id = dao.insert(alarm)
             val saved = alarm.copy(id = id.toInt())
