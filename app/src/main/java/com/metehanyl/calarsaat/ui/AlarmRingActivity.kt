@@ -2,12 +2,15 @@ package com.metehanyl.calarsaat.ui
 
 import android.os.Build
 import android.os.Bundle
+import android.text.InputType
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.metehanyl.calarsaat.R
 import com.metehanyl.calarsaat.alarm.AlarmRingingService
@@ -116,9 +119,8 @@ class AlarmRingActivity : AppCompatActivity() {
             }
             "text" -> {
                 if (textPassHash != null) {
-                    binding.layoutTextSection.visibility = View.VISIBLE
                     binding.textSwipeDismissHint.visibility = View.GONE
-                    setupTextLock()
+                    showTextPasswordDialog()
                 } else {
                     binding.textSwipeDismissHint.visibility = View.VISIBLE
                 }
@@ -216,17 +218,27 @@ class AlarmRingActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupTextLock() {
-        binding.buttonConfirmText.setOnClickListener {
-            val entered = binding.editRingTextPass.text?.toString().orEmpty()
+    private fun showTextPasswordDialog() {
+        val input = EditText(this).apply {
+            inputType = InputType.TYPE_CLASS_TEXT
+            hint = getString(R.string.text_pass_hint)
+            setPadding(48, 24, 48, 24)
+        }
+        val dialog = AlertDialog.Builder(this)
+            .setTitle(getString(R.string.ring_dismiss_hint_text))
+            .setView(input)
+            .setCancelable(false)
+            .setPositiveButton(getString(R.string.ring_confirm_button), null)
+            .create()
+        dialog.show()
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            val entered = input.text.toString()
             if (PinHasher.hash(entered) == textPassHash) {
+                dialog.dismiss()
                 dismissAlarm()
             } else {
-                binding.textTextError.visibility = View.VISIBLE
-                binding.editRingTextPass.text?.clear()
-                binding.buttonConfirmText.postDelayed({
-                    binding.textTextError.visibility = View.INVISIBLE
-                }, 1500)
+                input.text.clear()
+                input.error = getString(R.string.ring_text_wrong)
             }
         }
     }
