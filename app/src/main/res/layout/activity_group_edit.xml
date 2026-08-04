@@ -41,11 +41,56 @@
                     android:hint="@string/group_name_hint" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <!-- Inline time picker for adding times to group -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="4dp">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <NumberPicker
+                        android:id="@+id/numberPickerGroupHour"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=":"
+                        android:textSize="36sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/colorPrimary"
+                        android:paddingHorizontal="12dp" />
+
+                    <NumberPicker
+                        android:id="@+id/numberPickerGroupMinute"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <ImageButton
+                    android:id="@+id/buttonGroupKeyboardInput"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="bottom|end"
+                    android:src="@drawable/ic_keyboard"
+                    android:tint="?attr/colorPrimary"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/keyboard_input_desc" />
+            </FrameLayout>
+
             <Button
                 android:id="@+id/buttonAddTime"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
                 android:text="@string/add_time_button"
                 style="@style/Widget.Material3.Button.TextButton" />
 

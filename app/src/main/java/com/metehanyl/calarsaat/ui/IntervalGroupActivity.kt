@@ -1,7 +1,13 @@
 package com.metehanyl.calarsaat.ui
 
 import android.os.Bundle
+import android.text.InputFilter
+import android.text.InputType
+import android.view.Gravity
 import android.view.View
+import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.NumberPicker
 import android.widget.RadioButton
 import android.widget.SeekBar
 import androidx.appcompat.app.AlertDialog
@@ -9,9 +15,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.chip.Chip
 import com.google.android.material.snackbar.Snackbar
-import android.view.Gravity
-import android.widget.LinearLayout
-import android.widget.NumberPicker
 import com.metehanyl.calarsaat.R
 import com.metehanyl.calarsaat.alarm.AlarmScheduler
 import com.metehanyl.calarsaat.alarm.AlarmSounds
@@ -55,8 +58,7 @@ class IntervalGroupActivity : AppCompatActivity() {
         setupVolumeSlider()
         setupLockCheckboxes()
 
-        binding.textIntervalStartTime.setOnClickListener { showTimePicker() }
-        updateTimeDisplay()
+        setupTimePickers()
 
         val groupId = intent.getIntExtra(EXTRA_INTERVAL_GROUP_ID, -1)
         if (groupId != -1) {
@@ -138,36 +140,73 @@ class IntervalGroupActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateTimeDisplay() {
-        binding.textIntervalStartTime.text = "%02d:%02d".format(startHour, startMinute)
+    private fun setupTimePickers() {
+        binding.numberPickerIntervalHour.apply {
+            minValue = 0
+            maxValue = 23
+            setFormatter { "%02d".format(it) }
+            value = startHour
+            setOnValueChangedListener { _, _, new -> startHour = new }
+        }
+        binding.numberPickerIntervalMinute.apply {
+            minValue = 0
+            maxValue = 59
+            setFormatter { "%02d".format(it) }
+            value = startMinute
+            setOnValueChangedListener { _, _, new -> startMinute = new }
+        }
+        binding.buttonIntervalKeyboardInput.setOnClickListener { showKeyboardTimePicker() }
     }
 
-    private fun showTimePicker() {
+    private fun updateTimeDisplay() {
+        binding.numberPickerIntervalHour.value = startHour
+        binding.numberPickerIntervalMinute.value = startMinute
+    }
+
+    private fun showKeyboardTimePicker() {
         val container = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER
-            setPadding(64, 32, 64, 16)
+            setPadding(64, 40, 64, 16)
         }
-        val npHour = NumberPicker(this).apply {
-            minValue = 0; maxValue = 23; value = startHour
-            setFormatter { "%02d".format(it) }
+        val editHour = EditText(this).apply {
+            inputType = InputType.TYPE_CLASS_NUMBER
+            hint = getString(R.string.keyboard_hour_hint)
+            maxLines = 1
+            filters = arrayOf(InputFilter.LengthFilter(2))
+            setText("%02d".format(startHour))
+            textSize = 28f
+            gravity = Gravity.CENTER
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         }
         val colon = android.widget.TextView(this).apply {
-            text = ":"; textSize = 28f; setPadding(16, 0, 16, 0)
+            text = ":"; textSize = 28f; setPadding(16, 0, 16, 0); gravity = Gravity.CENTER
         }
-        val npMinute = NumberPicker(this).apply {
-            minValue = 0; maxValue = 59; value = startMinute
-            setFormatter { "%02d".format(it) }
+        val editMinute = EditText(this).apply {
+            inputType = InputType.TYPE_CLASS_NUMBER
+            hint = getString(R.string.keyboard_minute_hint)
+            maxLines = 1
+            filters = arrayOf(InputFilter.LengthFilter(2))
+            setText("%02d".format(startMinute))
+            textSize = 28f
+            gravity = Gravity.CENTER
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         }
-        container.addView(npHour)
+        container.addView(editHour)
         container.addView(colon)
-        container.addView(npMinute)
+        container.addView(editMinute)
         AlertDialog.Builder(this)
-            .setTitle(R.string.select_time_title)
+            .setTitle(R.string.keyboard_time_input_title)
             .setView(container)
             .setPositiveButton(R.string.action_save) { _, _ ->
-                startHour = npHour.value
-                startMinute = npMinute.value
+                val h = editHour.text.toString().toIntOrNull()?.coerceIn(0, 23)
+                val m = editMinute.text.toString().toIntOrNull()?.coerceIn(0, 59)
+                if (h == null || m == null) {
+                    Snackbar.make(binding.root, R.string.keyboard_time_invalid, Snackbar.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+                startHour = h
+                startMinute = m
                 updateTimeDisplay()
             }
             .setNegativeButton(R.string.action_cancel, null)
