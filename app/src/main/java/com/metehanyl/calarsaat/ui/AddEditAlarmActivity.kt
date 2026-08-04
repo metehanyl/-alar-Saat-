@@ -9,8 +9,9 @@ import android.widget.SeekBar
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.chip.Chip
 import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.timepicker.MaterialTimePicker
-import com.google.android.material.timepicker.TimeFormat
+import android.widget.LinearLayout
+import android.widget.NumberPicker
+import android.view.Gravity
 import com.metehanyl.calarsaat.R
 import com.metehanyl.calarsaat.alarm.AlarmScheduler
 import com.metehanyl.calarsaat.alarm.AlarmSounds
@@ -101,18 +102,35 @@ class AddEditAlarmActivity : AppCompatActivity() {
     }
 
     private fun showTimePicker() {
-        val picker = MaterialTimePicker.Builder()
-            .setTimeFormat(TimeFormat.CLOCK_24H)
-            .setHour(currentHour)
-            .setMinute(currentMinute)
-            .setTitleText(getString(R.string.new_alarm_title))
-            .build()
-        picker.addOnPositiveButtonClickListener {
-            currentHour = picker.hour
-            currentMinute = picker.minute
-            updateTimeDisplay()
+        val container = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER
+            setPadding(64, 32, 64, 16)
         }
-        picker.show(supportFragmentManager, "timePicker")
+        val npHour = NumberPicker(this).apply {
+            minValue = 0; maxValue = 23; value = currentHour
+            setFormatter { "%02d".format(it) }
+        }
+        val colon = android.widget.TextView(this).apply {
+            text = ":"; textSize = 28f; setPadding(16, 0, 16, 0)
+        }
+        val npMinute = NumberPicker(this).apply {
+            minValue = 0; maxValue = 59; value = currentMinute
+            setFormatter { "%02d".format(it) }
+        }
+        container.addView(npHour)
+        container.addView(colon)
+        container.addView(npMinute)
+        AlertDialog.Builder(this)
+            .setTitle(R.string.select_time_title)
+            .setView(container)
+            .setPositiveButton(R.string.action_save) { _, _ ->
+                currentHour = npHour.value
+                currentMinute = npMinute.value
+                updateTimeDisplay()
+            }
+            .setNegativeButton(R.string.action_cancel, null)
+            .show()
     }
 
     private fun buildDayChips() {

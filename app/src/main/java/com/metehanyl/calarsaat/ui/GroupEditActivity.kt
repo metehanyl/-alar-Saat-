@@ -1,6 +1,8 @@
 package com.metehanyl.calarsaat.ui
 
-import android.app.TimePickerDialog
+import android.view.Gravity
+import android.widget.LinearLayout
+import android.widget.NumberPicker
 import android.os.Bundle
 import android.view.View
 import android.widget.RadioButton
@@ -215,18 +217,39 @@ class GroupEditActivity : AppCompatActivity() {
 
     private fun showTimePicker() {
         val now = Calendar.getInstance()
-        TimePickerDialog(
-            this,
-            { _, hour, minute ->
-                if (times.none { it.first == hour && it.second == minute }) {
-                    times.add(hour to minute)
+        val container = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER
+            setPadding(64, 32, 64, 16)
+        }
+        val npHour = NumberPicker(this).apply {
+            minValue = 0; maxValue = 23; value = now.get(Calendar.HOUR_OF_DAY)
+            setFormatter { "%02d".format(it) }
+        }
+        val colon = android.widget.TextView(this).apply {
+            text = ":"; textSize = 28f; setPadding(16, 0, 16, 0)
+        }
+        val npMinute = NumberPicker(this).apply {
+            minValue = 0; maxValue = 59; value = now.get(Calendar.MINUTE)
+            setFormatter { "%02d".format(it) }
+        }
+        container.addView(npHour)
+        container.addView(colon)
+        container.addView(npMinute)
+        AlertDialog.Builder(this)
+            .setTitle(R.string.select_time_title)
+            .setView(container)
+            .setPositiveButton(R.string.action_save) { _, _ ->
+                val h = npHour.value; val m = npMinute.value
+                if (times.none { it.first == h && it.second == m }) {
+                    times.add(h to m)
                     times.sortWith(compareBy({ it.first }, { it.second }))
                     adapter.notifyDataSetChanged()
                     updateEmptyHint()
                 }
-            },
-            now.get(Calendar.HOUR_OF_DAY), now.get(Calendar.MINUTE), true
-        ).show()
+            }
+            .setNegativeButton(R.string.action_cancel, null)
+            .show()
     }
 
     private fun updateEmptyHint() {

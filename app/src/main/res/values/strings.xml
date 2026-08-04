@@ -109,6 +109,7 @@
     <string name="ring_text_wrong">Yanlış şifre</string>
     <string name="ring_confirm_button">Onayla</string>
     <string name="time_tap_to_change">Saati değiştirmek için dokunun</string>
+    <string name="select_time_title">Saat Seçin</string>
 
     <string name="lock_steps_title">Kilitleme Adımları</string>
     <string name="lock_steps_hint">Alarm kapatma için istediğiniz adımları seçin (sırayla uygulanır)</string>

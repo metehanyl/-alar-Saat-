@@ -80,6 +80,7 @@ class PatternLockView @JvmOverloads constructor(
         touchY = event.y
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
+                parent?.requestDisallowInterceptTouchEvent(true)
                 selectedNodes.clear()
                 isDrawing = true
                 showError = false
@@ -90,7 +91,8 @@ class PatternLockView @JvmOverloads constructor(
                 tryAdd()
                 invalidate()
             }
-            MotionEvent.ACTION_UP -> {
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                parent?.requestDisallowInterceptTouchEvent(false)
                 isDrawing = false
                 if (selectedNodes.size >= 4) {
                     onPatternComplete?.invoke(selectedNodes.toList())
