@@ -10,17 +10,18 @@ class AlarmApp : Application() {
 
     companion object {
         const val CHANNEL_ID_ALARM = "alarm_channel"
+        const val CHANNEL_ID_SNOOZE = "snooze_channel"
     }
 
     override fun onCreate() {
         super.onCreate()
-        createNotificationChannel()
+        createNotificationChannels()
     }
 
-    private fun createNotificationChannel() {
+    private fun createNotificationChannels() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val manager = getSystemService(NotificationManager::class.java)
-            val channel = NotificationChannel(
+            val alarmChannel = NotificationChannel(
                 CHANNEL_ID_ALARM,
                 getString(R.string.notification_channel_name),
                 NotificationManager.IMPORTANCE_HIGH
@@ -30,7 +31,16 @@ class AlarmApp : Application() {
                 enableVibration(false)
                 lockscreenVisibility = NotificationManager.IMPORTANCE_HIGH
             }
-            manager.createNotificationChannel(channel)
+            val snoozeChannel = NotificationChannel(
+                CHANNEL_ID_SNOOZE,
+                "Erteleme Bildirimleri",
+                NotificationManager.IMPORTANCE_DEFAULT
+            ).apply {
+                setSound(null, null)
+                enableVibration(false)
+            }
+            manager.createNotificationChannel(alarmChannel)
+            manager.createNotificationChannel(snoozeChannel)
         }
     }
 }

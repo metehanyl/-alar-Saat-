@@ -10,6 +10,7 @@ import com.metehanyl.calarsaat.data.AlarmEntity
 import com.metehanyl.calarsaat.databinding.ItemAlarmBinding
 import com.metehanyl.calarsaat.util.DayUtils
 import com.metehanyl.calarsaat.util.TimeRemainingFormatter
+import java.util.Calendar
 
 class AlarmAdapter(
     private val onToggle: (AlarmEntity, Boolean) -> Unit,
@@ -41,6 +42,15 @@ class AlarmAdapter(
                 )
             } else {
                 binding.textRemaining.visibility = View.GONE
+            }
+
+            if (alarm.isSnoozed && alarm.snoozedUntilMillis > 0) {
+                val cal = Calendar.getInstance().apply { timeInMillis = alarm.snoozedUntilMillis }
+                val timeStr = "%02d:%02d".format(cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE))
+                binding.textSnoozeInfo.text = binding.root.context.getString(R.string.alarm_snoozed_until, timeStr)
+                binding.textSnoozeInfo.visibility = View.VISIBLE
+            } else {
+                binding.textSnoozeInfo.visibility = View.GONE
             }
 
             binding.switchEnabled.setOnCheckedChangeListener(null)

@@ -128,4 +128,9 @@
     <string name="interval_minutes_error">Aralık en az 1 dakika olmalı</string>
     <string name="interval_group_alarm_count">%1$d alarm</string>
     <string name="interval_group_detail">%1$s başlar, her %2$d dk, %3$d alarm</string>
+
+    <string name="snooze_notification_title">Alarm Ertelendi</string>
+    <string name="snooze_notification_text">Saat %1$s\'de tekrar çalacak</string>
+    <string name="snooze_cancel_action">İptal</string>
+    <string name="alarm_snoozed_until">Ertelendi: %1$s</string>
 </resources>

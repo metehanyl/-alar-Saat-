@@ -85,6 +85,18 @@ class AlarmScheduler(private val context: Context) {
         return triggerAt
     }
 
+    fun cancelSnooze(alarmId: Int) {
+        val requestCode = snoozeRequestCode(alarmId)
+        val pendingIntent = PendingIntent.getBroadcast(
+            context, requestCode, Intent(context, AlarmReceiver::class.java),
+            PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+        )
+        if (pendingIntent != null) {
+            alarmManager.cancel(pendingIntent)
+            pendingIntent.cancel()
+        }
+    }
+
     private fun snoozeRequestCode(alarmId: Int) = alarmId + SNOOZE_REQUEST_CODE_OFFSET
 
     private fun buildPendingIntent(alarm: AlarmEntity): PendingIntent {
@@ -112,6 +124,7 @@ class AlarmScheduler(private val context: Context) {
 
     companion object {
         const val SNOOZE_MINUTES = 5
-        private const val SNOOZE_REQUEST_CODE_OFFSET = 1_000_000
+        const val SNOOZE_REQUEST_CODE_OFFSET = 1_000_000
+        const val SNOOZE_NOTIF_ID_OFFSET = 2_000_000
     }
 }

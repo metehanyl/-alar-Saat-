@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.PowerManager
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.metehanyl.calarsaat.data.AlarmDatabase
 import com.metehanyl.calarsaat.ui.AlarmRingActivity
@@ -58,9 +59,24 @@ class AlarmReceiver : BroadcastReceiver() {
         }
         context.startActivity(activityIntent)
 
-        if (isSnooze) return
-
         val pendingResult = goAsync()
+        if (isSnooze) {
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val dao = AlarmDatabase.getInstance(context).alarmDao()
+                    val alarm = dao.getById(alarmId)
+                    if (alarm != null) {
+                        dao.update(alarm.copy(isSnoozed = false, snoozedUntilMillis = 0L))
+                    }
+                    NotificationManagerCompat.from(context)
+                        .cancel(alarmId + AlarmScheduler.SNOOZE_NOTIF_ID_OFFSET)
+                } finally {
+                    pendingResult.finish()
+                }
+            }
+            return
+        }
+
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val dao = AlarmDatabase.getInstance(context).alarmDao()

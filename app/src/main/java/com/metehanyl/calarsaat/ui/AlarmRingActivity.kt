@@ -1,5 +1,7 @@
 package com.metehanyl.calarsaat.ui
 
+import android.app.PendingIntent
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.text.InputType
@@ -12,6 +14,9 @@ import android.widget.EditText
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import com.metehanyl.calarsaat.AlarmApp
 import com.metehanyl.calarsaat.R
 import com.metehanyl.calarsaat.alarm.AlarmRingingService
 import com.metehanyl.calarsaat.alarm.AlarmScheduler
@@ -25,8 +30,14 @@ import com.metehanyl.calarsaat.alarm.EXTRA_ALARM_REQUIRE_PIN
 import com.metehanyl.calarsaat.alarm.EXTRA_ALARM_SOUND_ID
 import com.metehanyl.calarsaat.alarm.EXTRA_ALARM_TEXT_PASS_HASH
 import com.metehanyl.calarsaat.alarm.EXTRA_ALARM_VOLUME
+import com.metehanyl.calarsaat.alarm.SnoozeCancelReceiver
+import com.metehanyl.calarsaat.data.AlarmDatabase
 import com.metehanyl.calarsaat.data.PinHasher
 import com.metehanyl.calarsaat.databinding.ActivityAlarmRingBinding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.util.Calendar
 import kotlin.math.abs
 
@@ -96,6 +107,20 @@ class AlarmRingActivity : AppCompatActivity() {
                 rawLockType.isNotEmpty() -> listOf(rawLockType)
                 requirePin -> listOf("pin")
                 else -> emptyList()
+            }
+        }
+
+        // Override lock data from DB to ensure we always have the latest configuration
+        if (alarmId != -1) {
+            runBlocking(Dispatchers.IO) {
+                val alarm = AlarmDatabase.getInstance(this@AlarmRingActivity).alarmDao().getById(alarmId)
+                if (alarm != null) {
+                    lockSteps = alarm.effectiveLockSteps()
+                    pinHash = alarm.pinHash
+                    patternHash = alarm.patternHash
+                    textPassHash = alarm.textPassHash
+                    requirePin = alarm.requirePin
+                }
             }
         }
 
@@ -273,7 +298,7 @@ class AlarmRingActivity : AppCompatActivity() {
     private fun snoozeAlarm() {
         AlarmRingingService.stop(this)
         if (alarmId != -1) {
-            AlarmScheduler(this).scheduleSnooze(
+            val triggerAt = AlarmScheduler(this).scheduleSnooze(
                 alarmId = alarmId,
                 label = intent.getStringExtra(EXTRA_ALARM_LABEL).orEmpty(),
                 soundId = soundId,
@@ -285,8 +310,39 @@ class AlarmRingActivity : AppCompatActivity() {
                 textPassHash = textPassHash,
                 lockSteps = lockSteps.joinToString(",")
             )
+            showSnoozeNotification(triggerAt)
+            CoroutineScope(Dispatchers.IO).launch {
+                val dao = AlarmDatabase.getInstance(this@AlarmRingActivity).alarmDao()
+                val alarm = dao.getById(alarmId)
+                if (alarm != null) {
+                    dao.update(alarm.copy(isSnoozed = true, snoozedUntilMillis = triggerAt))
+                }
+            }
         }
         finish()
+    }
+
+    private fun showSnoozeNotification(triggerAtMillis: Long) {
+        val cal = Calendar.getInstance().apply { timeInMillis = triggerAtMillis }
+        val timeStr = "%02d:%02d".format(cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE))
+
+        val cancelIntent = Intent(this, SnoozeCancelReceiver::class.java).apply {
+            putExtra(EXTRA_ALARM_ID, alarmId)
+        }
+        val cancelPi = PendingIntent.getBroadcast(
+            this, alarmId + AlarmScheduler.SNOOZE_NOTIF_ID_OFFSET, cancelIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notif = NotificationCompat.Builder(this, AlarmApp.CHANNEL_ID_SNOOZE)
+            .setSmallIcon(R.drawable.ic_alarm)
+            .setContentTitle(getString(R.string.snooze_notification_title))
+            .setContentText(getString(R.string.snooze_notification_text, timeStr))
+            .setOngoing(true)
+            .addAction(0, getString(R.string.snooze_cancel_action), cancelPi)
+            .build()
+
+        NotificationManagerCompat.from(this).notify(alarmId + AlarmScheduler.SNOOZE_NOTIF_ID_OFFSET, notif)
     }
 
     private fun hideKeyboard() {

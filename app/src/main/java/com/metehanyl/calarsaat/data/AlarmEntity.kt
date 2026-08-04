@@ -23,7 +23,9 @@ data class AlarmEntity(
     val patternHash: String? = null,
     val textPassHash: String? = null,
     val lockSteps: String = "",
-    val intervalGroupId: Int = -1
+    val intervalGroupId: Int = -1,
+    val isSnoozed: Boolean = false,
+    val snoozedUntilMillis: Long = 0L
 ) {
     fun repeatDaysSet(): Set<Int> =
         if (repeatDays.isBlank()) emptySet()
