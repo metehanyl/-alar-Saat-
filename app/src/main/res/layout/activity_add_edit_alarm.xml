@@ -29,28 +29,50 @@
             android:orientation="vertical"
             android:padding="20dp">
 
-            <!-- Tappable time display -->
-            <TextView
-                android:id="@+id/textTimeDisplay"
-                android:layout_width="wrap_content"
+            <!-- Inline time picker with keyboard fallback -->
+            <FrameLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:background="?attr/selectableItemBackground"
-                android:clickable="true"
-                android:focusable="true"
-                android:padding="16dp"
-                android:textSize="64sp"
-                android:textStyle="bold"
-                android:textColor="?attr/colorPrimary"
-                tools:text="07:30" />
+                android:paddingTop="8dp"
+                android:paddingBottom="4dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="@string/time_tap_to_change"
-                android:textSize="12sp"
-                android:textColor="?android:attr/textColorSecondary" />
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <NumberPicker
+                        android:id="@+id/numberPickerHour"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=":"
+                        android:textSize="36sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/colorPrimary"
+                        android:paddingHorizontal="12dp" />
+
+                    <NumberPicker
+                        android:id="@+id/numberPickerMinute"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <ImageButton
+                    android:id="@+id/buttonKeyboardInput"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="bottom|end"
+                    android:src="@drawable/ic_keyboard"
+                    android:tint="?attr/colorPrimary"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/keyboard_input_desc" />
+            </FrameLayout>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"

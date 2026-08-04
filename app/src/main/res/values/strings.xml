@@ -110,6 +110,11 @@
     <string name="ring_confirm_button">Onayla</string>
     <string name="time_tap_to_change">Saati değiştirmek için dokunun</string>
     <string name="select_time_title">Saat Seçin</string>
+    <string name="keyboard_input_desc">Klavyeden gir</string>
+    <string name="keyboard_time_input_title">Saati yazarak girin</string>
+    <string name="keyboard_hour_hint">Saat (0–23)</string>
+    <string name="keyboard_minute_hint">Dakika (0–59)</string>
+    <string name="keyboard_time_invalid">Geçersiz saat veya dakika</string>
 
     <string name="lock_steps_title">Kilitleme Adımları</string>
     <string name="lock_steps_hint">Alarm kapatma için istediğiniz adımları seçin (sırayla uygulanır)</string>
