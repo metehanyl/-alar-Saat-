@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.metehanyl.calarsaat.R
 import com.metehanyl.calarsaat.data.AlarmEntity
 import com.metehanyl.calarsaat.databinding.ItemAlarmBinding
 import com.metehanyl.calarsaat.util.DayUtils
