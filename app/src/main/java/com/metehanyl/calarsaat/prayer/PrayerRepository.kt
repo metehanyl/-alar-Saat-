@@ -69,7 +69,9 @@ class PrayerRepository(private val context: Context) {
 
         if (matchingCities.isEmpty()) return LocationLookup.Failure("şehir bulunamadı: $il")
 
-        val candidateKeys = ilceCandidates.map { trKey(it) }.filter { it.isNotBlank() }
+        // İl adını da aday listesine ekle: GPS'ten ilçe gelmediğinde veya GPS'in döndürdüğü
+        // ilçe adı şehrin kendi adıyla aynı olduğunda (Kars → "Kars" ilçesi) eşleşmeyi sağlar.
+        val candidateKeys = (ilceCandidates + il).map { trKey(it) }.distinct().filter { it.isNotBlank() }
 
         // Aynı il adıyla eşleşen birden fazla şehir kaydı olabilir (mirror API'de yinelenen
         // kayıtlar görülüyor); sadece ilk kaydı kullanmak yerine, hedef ilçeyi içeren kaydı
@@ -88,14 +90,18 @@ class PrayerRepository(private val context: Context) {
                 continue
             }
 
-            // İstanbul gibi büyükşehirlerde Diyanet'in ilçe listesi sadece uzak/banliyö ilçeleri
-            // ayrı kayıt olarak tutar; merkez ilçeler şehrin kendi adıyla aynı olan "merkez" ilçe
-            // kaydı altında toplanır. Aday hiçbir özel ilçeyle eşleşmezse bu merkez kaydına düş.
+            // Eşleştirme önceliği (yukarıdan aşağıya):
+            // 1. GPS'ten gelen ilçe adlarıyla tam eşleşme
+            // 2. GPS'ten gelen ilçe adlarıyla kısmi eşleşme (içeren/içerilen)
+            // 3. Diyanet ilçesi == şehrin kendi adı (ör. "Trabzon" ilçesi)
+            // 4. "Merkez" adlı ilçe: bazı illerde merkez ilçe şehir adıyla değil
+            //    "Merkez" adıyla kayıtlıdır (ör. Kars → Merkez)
             val district = candidateKeys.firstNotNullOfOrNull { key ->
                 districts.firstOrNull { trKey(it.name) == key }
             } ?: candidateKeys.firstNotNullOfOrNull { key ->
                 districts.firstOrNull { trKey(it.name).contains(key) || key.contains(trKey(it.name)) }
             } ?: districts.firstOrNull { trKey(it.name) == trKey(city.name) }
+              ?: districts.firstOrNull { trKey(it.name) == "MERKEZ" }
 
             if (district != null) {
                 return LocationLookup.Success(
