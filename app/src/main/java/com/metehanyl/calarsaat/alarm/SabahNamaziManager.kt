@@ -12,7 +12,11 @@ import com.metehanyl.calarsaat.prayer.RefreshResult
 import java.util.Calendar
 
 sealed class SabahNamaziResult {
-    data class Success(val times: List<Pair<Int, Int>>) : SabahNamaziResult()
+    data class Success(
+        val times: List<Pair<Int, Int>>,
+        val sehirAdi: String,
+        val ilceAdi: String
+    ) : SabahNamaziResult()
     data class Failure(val message: String) : SabahNamaziResult()
 }
 
@@ -30,9 +34,17 @@ class SabahNamaziManager(private val context: Context) {
     private val prefs by lazy { PrefsManager(context) }
 
     suspend fun refresh(): SabahNamaziResult {
-        val imsak = when (val lookup = resolveTodaysImsak()) {
-            is ImsakLookup.Found -> lookup.time
-            is ImsakLookup.NotFound -> return SabahNamaziResult.Failure(lookup.message)
+        val imsakLookup = resolveTodaysImsak()
+        val imsak: ImsakTime
+        val sehirAdi: String
+        val ilceAdi: String
+        when (imsakLookup) {
+            is ImsakLookup.Found -> {
+                imsak = imsakLookup.time
+                sehirAdi = imsakLookup.sehirAdi
+                ilceAdi = imsakLookup.ilceAdi
+            }
+            is ImsakLookup.NotFound -> return SabahNamaziResult.Failure(imsakLookup.message)
         }
 
         cancelAutoAlarms()
@@ -79,7 +91,7 @@ class SabahNamaziManager(private val context: Context) {
             dao.update(saved.copy(nextTriggerAtMillis = nextTrigger))
             times.add(hour to minute)
         }
-        return SabahNamaziResult.Success(times)
+        return SabahNamaziResult.Success(times, sehirAdi, ilceAdi)
     }
 
     suspend fun cancelAutoAlarms() {
@@ -136,8 +148,9 @@ class SabahNamaziManager(private val context: Context) {
         if (cached != null) {
             val (day, isToday) = cached.todayOrClosest()
             if (isToday) {
-                return parseImsak(day.imsak)?.let { ImsakLookup.Found(it) }
-                    ?: ImsakLookup.NotFound("İmsak vakti okunamadı.")
+                return parseImsak(day.imsak)?.let {
+                    ImsakLookup.Found(it, cached.sehirAdi, cached.ilceAdi)
+                } ?: ImsakLookup.NotFound("İmsak vakti okunamadı.")
             }
         }
         return when (val result = prayerRepository.refresh()) {
@@ -146,8 +159,9 @@ class SabahNamaziManager(private val context: Context) {
                 if (!isToday) {
                     ImsakLookup.NotFound("Bugünün İmsak vakti alınamadı.")
                 } else {
-                    parseImsak(day.imsak)?.let { ImsakLookup.Found(it) }
-                        ?: ImsakLookup.NotFound("İmsak vakti okunamadı.")
+                    parseImsak(day.imsak)?.let {
+                        ImsakLookup.Found(it, result.bundle.sehirAdi, result.bundle.ilceAdi)
+                    } ?: ImsakLookup.NotFound("İmsak vakti okunamadı.")
                 }
             }
             is RefreshResult.Failure -> ImsakLookup.NotFound(result.message)
@@ -163,7 +177,7 @@ class SabahNamaziManager(private val context: Context) {
     }
 
     private sealed class ImsakLookup {
-        data class Found(val time: ImsakTime) : ImsakLookup()
+        data class Found(val time: ImsakTime, val sehirAdi: String, val ilceAdi: String) : ImsakLookup()
         data class NotFound(val message: String) : ImsakLookup()
     }
 

@@ -23,6 +23,7 @@ import com.metehanyl.calarsaat.alarm.AlarmTonePlayer
 import com.metehanyl.calarsaat.alarm.SabahNamaziManager
 import com.metehanyl.calarsaat.alarm.SabahNamaziResult
 import com.metehanyl.calarsaat.data.AlarmDatabase
+import com.metehanyl.calarsaat.prayer.PrayerRepository
 import com.metehanyl.calarsaat.data.AlarmEntity
 import com.metehanyl.calarsaat.data.AlarmGroupEntity
 import com.metehanyl.calarsaat.data.IntervalAlarmGroupEntity
@@ -46,6 +47,7 @@ class MainActivity : AppCompatActivity() {
     private val scheduler by lazy { AlarmScheduler(this) }
     private val prefs by lazy { PrefsManager(this) }
     private val sabahNamaziManager by lazy { SabahNamaziManager(this) }
+    private val prayerRepository by lazy { com.metehanyl.calarsaat.prayer.PrayerRepository(this) }
     private var sabahExpanded = false
 
     private val notificationPermissionLauncher =
@@ -125,12 +127,24 @@ class MainActivity : AppCompatActivity() {
         observeIntervalGroups()
         observeSabahNamaziAlarms()
         healSabahNamaziStateIfNeeded()
+        loadCachedSabahLocation()
     }
 
     override fun onResume() {
         super.onResume()
         requestFullScreenIntentPermissionIfNeeded()
         requestBatteryOptimizationExemptionIfNeeded()
+    }
+
+    private fun loadCachedSabahLocation() {
+        val bundle = prayerRepository.getCachedBundle() ?: return
+        updateSabahLocationText(bundle.sehirAdi, bundle.ilceAdi)
+    }
+
+    private fun updateSabahLocationText(sehirAdi: String, ilceAdi: String) {
+        val locationText = getString(R.string.sabah_location_format, sehirAdi, ilceAdi)
+        binding.textSabahLocation.text = locationText
+        binding.textSabahLocation.visibility = View.VISIBLE
     }
 
     private fun healSabahNamaziStateIfNeeded() {
@@ -358,11 +372,13 @@ class MainActivity : AppCompatActivity() {
                 is SabahNamaziResult.Success -> {
                     prefs.setSabahNamaziEnabled(true)
                     sabahNamaziManager.scheduleDailyRefresh()
+                    updateSabahLocationText(result.sehirAdi, result.ilceAdi)
                     if (!silent) {
                         val timesText = result.times.joinToString(", ") { (h, m) -> "%02d:%02d".format(h, m) }
+                        val locationText = getString(R.string.sabah_location_format, result.sehirAdi, result.ilceAdi)
                         Snackbar.make(
                             binding.root,
-                            getString(R.string.sabah_namazi_enabled_message, timesText),
+                            getString(R.string.sabah_namazi_enabled_message, timesText, locationText),
                             Snackbar.LENGTH_LONG
                         ).show()
                     }
