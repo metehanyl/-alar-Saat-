@@ -52,6 +52,13 @@ class UpcomingAlarmNotifier(private val context: Context) {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        // Kullanıcı bildirimi kapatırsa UpcomingAlarmDismissReceiver hemen yeniden gösterir
+        val dismissPi = PendingIntent.getBroadcast(
+            context, 0,
+            Intent(context, UpcomingAlarmDismissReceiver::class.java),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
         val notif = NotificationCompat.Builder(context, AlarmApp.CHANNEL_ID_UPCOMING)
             .setSmallIcon(R.drawable.ic_alarm)
             .setContentTitle(context.getString(R.string.upcoming_alarm_notif_title))
@@ -60,6 +67,7 @@ class UpcomingAlarmNotifier(private val context: Context) {
             .setAutoCancel(false)
             .setSilent(true)
             .setContentIntent(openPi)
+            .setDeleteIntent(dismissPi)
             .build()
 
         try {

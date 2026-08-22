@@ -86,6 +86,10 @@
             android:name=".alarm.SnoozeCancelReceiver"
             android:exported="false" />
 
+        <receiver
+            android:name=".alarm.UpcomingAlarmDismissReceiver"
+            android:exported="false" />
+
         <service
             android:name=".alarm.AlarmRingingService"
             android:exported="false"
