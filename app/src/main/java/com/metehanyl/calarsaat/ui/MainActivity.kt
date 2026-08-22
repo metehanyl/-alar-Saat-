@@ -22,6 +22,7 @@ import com.metehanyl.calarsaat.alarm.AlarmSounds
 import com.metehanyl.calarsaat.alarm.AlarmTonePlayer
 import com.metehanyl.calarsaat.alarm.SabahNamaziManager
 import com.metehanyl.calarsaat.alarm.SabahNamaziResult
+import com.metehanyl.calarsaat.alarm.UpcomingAlarmNotifier
 import com.metehanyl.calarsaat.data.AlarmDatabase
 import com.metehanyl.calarsaat.prayer.PrayerRepository
 import com.metehanyl.calarsaat.data.AlarmEntity
@@ -48,6 +49,7 @@ class MainActivity : AppCompatActivity() {
     private val prefs by lazy { PrefsManager(this) }
     private val sabahNamaziManager by lazy { SabahNamaziManager(this) }
     private val prayerRepository by lazy { com.metehanyl.calarsaat.prayer.PrayerRepository(this) }
+    private val upcomingNotifier by lazy { UpcomingAlarmNotifier(this) }
     private var sabahExpanded = false
 
     private val notificationPermissionLauncher =
@@ -126,6 +128,7 @@ class MainActivity : AppCompatActivity() {
         observeGroups()
         observeIntervalGroups()
         observeSabahNamaziAlarms()
+        observeUpcomingAlarmNotification()
         healSabahNamaziStateIfNeeded()
         loadCachedSabahLocation()
     }
@@ -398,6 +401,14 @@ class MainActivity : AppCompatActivity() {
         binding.switchSabahNamazi.isChecked = false
         binding.switchSabahNamazi.setOnCheckedChangeListener { _, checked ->
             onSabahNamaziToggled(checked)
+        }
+    }
+
+    private fun observeUpcomingAlarmNotification() {
+        lifecycleScope.launch {
+            dao.observeAll().collect { alarms ->
+                upcomingNotifier.update(alarms)
+            }
         }
     }
 

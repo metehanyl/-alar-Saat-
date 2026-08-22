@@ -11,6 +11,7 @@ class AlarmApp : Application() {
     companion object {
         const val CHANNEL_ID_ALARM = "alarm_channel"
         const val CHANNEL_ID_SNOOZE = "snooze_channel"
+        const val CHANNEL_ID_UPCOMING = "upcoming_alarm"
     }
 
     override fun onCreate() {
@@ -39,8 +40,18 @@ class AlarmApp : Application() {
                 setSound(null, null)
                 enableVibration(false)
             }
+            val upcomingChannel = NotificationChannel(
+                CHANNEL_ID_UPCOMING,
+                getString(R.string.upcoming_alarm_channel_name),
+                NotificationManager.IMPORTANCE_LOW
+            ).apply {
+                setSound(null, null)
+                enableVibration(false)
+                description = getString(R.string.upcoming_alarm_channel_desc)
+            }
             manager.createNotificationChannel(alarmChannel)
             manager.createNotificationChannel(snoozeChannel)
+            manager.createNotificationChannel(upcomingChannel)
         }
     }
 }
