@@ -38,12 +38,37 @@ class AlarmRingingService : Service() {
         val requirePin = intent?.getBooleanExtra(EXTRA_ALARM_REQUIRE_PIN, false) ?: false
         val pinHash = intent?.getStringExtra(EXTRA_ALARM_PIN_HASH)
         val volume = intent?.getIntExtra(EXTRA_ALARM_VOLUME, 100) ?: 100
+        val lockType = intent?.getStringExtra(EXTRA_ALARM_LOCK_TYPE).orEmpty()
+        val patternHash = intent?.getStringExtra(EXTRA_ALARM_PATTERN_HASH)
+        val textPassHash = intent?.getStringExtra(EXTRA_ALARM_TEXT_PASS_HASH)
+        val lockSteps = intent?.getStringExtra(EXTRA_ALARM_LOCK_STEPS).orEmpty()
 
         currentAlarmId = alarmId
         currentLabel = label
 
         acquireWakeLock()
         startForeground(NOTIFICATION_ID, buildNotification(alarmId, label, soundId, requirePin, pinHash, volume))
+
+        // Kilit açıkken (ekran aktifken) foreground service'ten activity başlatmak
+        // daha güvenilir çalışır; AlarmReceiver'dan gelen çağrı OEM kısıtlamasına
+        // takılabilir ama startForeground() sonrası servis bu ayrıcalığa sahiptir.
+        if (alarmId != -1) {
+            val activityIntent = Intent(this, AlarmRingActivity::class.java).apply {
+                putExtra(EXTRA_ALARM_ID, alarmId)
+                putExtra(EXTRA_ALARM_LABEL, label)
+                putExtra(EXTRA_ALARM_SOUND_ID, soundId)
+                putExtra(EXTRA_ALARM_REQUIRE_PIN, requirePin)
+                putExtra(EXTRA_ALARM_PIN_HASH, pinHash)
+                putExtra(EXTRA_ALARM_VOLUME, volume)
+                putExtra(EXTRA_ALARM_LOCK_TYPE, lockType)
+                putExtra(EXTRA_ALARM_PATTERN_HASH, patternHash)
+                putExtra(EXTRA_ALARM_TEXT_PASS_HASH, textPassHash)
+                putExtra(EXTRA_ALARM_LOCK_STEPS, lockSteps)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_USER_ACTION)
+            }
+            startActivity(activityIntent)
+        }
+
         requestAudioFocus()
         startSound(soundId, volume)
         startVibration()

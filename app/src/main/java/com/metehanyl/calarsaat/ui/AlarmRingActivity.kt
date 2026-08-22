@@ -350,20 +350,6 @@ class AlarmRingActivity : AppCompatActivity() {
         currentFocus?.let { imm.hideSoftInputFromWindow(it.windowToken, 0) }
     }
 
-    /**
-     * Kullanıcı alarm çalarken Giriş/Ana Ekran veya Son Uygulamalar tuşuna bastığında
-     * çağrılır. Alarm henüz durdurulmadıysa ekranı hemen geri getirir.
-     */
-    override fun onUserLeaveHint() {
-        super.onUserLeaveHint()
-        if (AlarmRingingService.currentAlarmId != -1) {
-            startActivity(
-                Intent(this, AlarmRingActivity::class.java)
-                    .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-            )
-        }
-    }
-
     override fun onDestroy() {
         super.onDestroy()
         if (isFinishing) {
