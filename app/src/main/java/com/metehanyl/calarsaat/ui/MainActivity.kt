@@ -135,6 +135,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        requestOverlayPermissionIfNeeded()
         requestFullScreenIntentPermissionIfNeeded()
         requestBatteryOptimizationExemptionIfNeeded()
     }
@@ -568,6 +569,25 @@ class MainActivity : AppCompatActivity() {
             .setPositiveButton(R.string.battery_optimization_action) { _, _ ->
                 val intent = Intent(
                     Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT,
+                    Uri.parse("package:$packageName")
+                )
+                startActivity(intent)
+            }
+            .setNegativeButton(R.string.action_cancel, null)
+            .show()
+    }
+
+    private fun requestOverlayPermissionIfNeeded() {
+        if (Settings.canDrawOverlays(this)) return
+        if (prefs.isOverlayPromptShown()) return
+        prefs.setOverlayPromptShown(true)
+
+        AlertDialog.Builder(this)
+            .setTitle(R.string.overlay_permission_title)
+            .setMessage(R.string.overlay_permission_message)
+            .setPositiveButton(R.string.overlay_permission_action) { _, _ ->
+                val intent = Intent(
+                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                     Uri.parse("package:$packageName")
                 )
                 startActivity(intent)

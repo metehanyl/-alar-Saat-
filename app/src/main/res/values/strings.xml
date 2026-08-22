@@ -4,7 +4,7 @@
 
     <string name="notification_channel_name">Alarm</string>
     <string name="notification_channel_description">Çalar saat bildirimleri</string>
-    <string name="notification_alarm_text">Kapatmak için dokunun</string>
+    <string name="notification_alarm_text">Alarm çalıyor — açmak için dokunun</string>
     <string name="alarm_default_label">Alarm</string>
 
     <string name="empty_alarms_title">Henüz alarm yok</string>
@@ -57,6 +57,9 @@
     <string name="full_screen_intent_title">Tam ekran alarm izni</string>
     <string name="full_screen_intent_message">Alarm çaldığında ekran kilitliyken alarmın görünmesi için bu uygulamaya tam ekran bildirim izni vermeniz gerekiyor.</string>
 
+    <string name="overlay_permission_title">Ekranda görünme izni gerekli</string>
+    <string name="overlay_permission_message">Başka bir uygulama açıkken alarm çaldığında ekranınızda tam ekran açılması için \"Diğer uygulamaların üzerinde göster\" iznine ihtiyaç var.\n\nAçılan ekranda Çalar Saat için bu izni etkinleştirin.</string>
+    <string name="overlay_permission_action">İzin Ver</string>
     <string name="oem_autostart_title">Arka plan izni gerekli</string>
     <string name="oem_autostart_message">Telefonunuzun üreticisi (Xiaomi, Samsung, Huawei, Oppo, Vivo vb.) arka plandaki uygulamaları kısıtlayabiliyor. Alarmın ekran kilitliyken de güvenilir şekilde çalması için açılan ekranda \"Otomatik başlatma\" ve arka plan/kilit ekranı izinlerini bu uygulama için açın.</string>
     <string name="oem_autostart_action">Ayarları Aç</string>
