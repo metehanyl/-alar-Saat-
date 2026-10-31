@@ -1,12 +1,14 @@
 package com.metehanyl.calarsaat.ui
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.metehanyl.calarsaat.data.IntervalAlarmGroupEntity
 import com.metehanyl.calarsaat.databinding.ItemIntervalGroupBinding
+import com.metehanyl.calarsaat.util.TimeRemainingFormatter
 
 class IntervalGroupAdapter(
     private val onToggle: (IntervalAlarmGroupEntity, Boolean) -> Unit,
@@ -45,6 +47,39 @@ class IntervalGroupAdapter(
                 "%02d:%02d".format((totalMin / 60) % 24, totalMin % 60)
             }
             binding.textIntervalGroupTimes.text = times
+
+            if (item.enabled) {
+                val now = System.currentTimeMillis()
+                val repeatDays = item.repeatDaysSet()
+                var nextMillis = 0L
+                for (i in 0 until item.alarmCount) {
+                    val totalMin = item.startHour * 60 + item.startMinute + i * item.intervalMinutes
+                    val h = (totalMin / 60) % 24
+                    val m = totalMin % 60
+                    val candidate = TimeRemainingFormatter.nextTriggerMillis(h, m, repeatDays)
+                    if (candidate > now && (nextMillis == 0L || candidate < nextMillis)) {
+                        nextMillis = candidate
+                    }
+                }
+                if (nextMillis > now) {
+                    val totalMin = ((nextMillis - now) / 60_000L).coerceAtLeast(0)
+                    val hours = totalMin / 60
+                    val minutes = totalMin % 60
+                    binding.textIntervalGroupRemaining.visibility = View.VISIBLE
+                    binding.textIntervalGroupRemaining.text = if (hours > 0)
+                        binding.root.context.getString(
+                            com.metehanyl.calarsaat.R.string.time_remaining_hours_minutes, hours, minutes
+                        )
+                    else
+                        binding.root.context.getString(
+                            com.metehanyl.calarsaat.R.string.time_remaining_minutes, minutes
+                        )
+                } else {
+                    binding.textIntervalGroupRemaining.visibility = View.GONE
+                }
+            } else {
+                binding.textIntervalGroupRemaining.visibility = View.GONE
+            }
 
             binding.switchIntervalGroupEnabled.setOnCheckedChangeListener(null)
             binding.switchIntervalGroupEnabled.isChecked = item.enabled

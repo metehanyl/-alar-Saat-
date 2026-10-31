@@ -1,8 +1,11 @@
 package com.metehanyl.calarsaat.ui
 
+import android.graphics.Color
+import android.graphics.Paint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -33,8 +36,36 @@ class AlarmAdapter(
         fun bind(alarm: AlarmEntity) {
             binding.textTime.text = "%02d:%02d".format(alarm.hour, alarm.minute)
             val repeatSummary = DayUtils.summarize(alarm.repeatDaysSet())
-            binding.textLabel.text = if (alarm.label.isBlank()) repeatSummary
-            else "${alarm.label} • $repeatSummary"
+
+            if (alarm.isAutoSabahNamazi) {
+                // Sabah alarms: keep classic label + day summary, no day chips
+                binding.textLabel.text = if (alarm.label.isBlank()) repeatSummary
+                else "${alarm.label} • $repeatSummary"
+                binding.layoutDays.visibility = View.GONE
+            } else {
+                // Regular alarms: show just the label, then colored day chips
+                binding.textLabel.text = alarm.label.ifBlank { "" }
+                binding.layoutDays.visibility = View.VISIBLE
+                val activeDays = alarm.repeatDaysSet()
+                val dayViews = listOf(
+                    Calendar.MONDAY to binding.textDayMon,
+                    Calendar.TUESDAY to binding.textDayTue,
+                    Calendar.WEDNESDAY to binding.textDayWed,
+                    Calendar.THURSDAY to binding.textDayThu,
+                    Calendar.FRIDAY to binding.textDayFri,
+                    Calendar.SATURDAY to binding.textDaySat,
+                    Calendar.SUNDAY to binding.textDaySun
+                )
+                for ((dayValue, tv) in dayViews) {
+                    if (activeDays.isEmpty() || dayValue in activeDays) {
+                        tv.setTextColor(Color.parseColor("#4CAF50"))
+                        tv.paintFlags = tv.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+                    } else {
+                        tv.setTextColor(Color.parseColor("#F44336"))
+                        tv.paintFlags = tv.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+                    }
+                }
+            }
 
             if (alarm.enabled) {
                 binding.textRemaining.visibility = View.VISIBLE

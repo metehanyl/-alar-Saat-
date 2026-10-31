@@ -21,16 +21,32 @@
             android:orientation="horizontal"
             android:padding="14dp">
 
-            <TextView
-                android:id="@+id/textGroupName"
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                tools:text="İş Günleri" />
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/textGroupName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    tools:text="İş Günleri" />
+
+                <TextView
+                    android:id="@+id/textGroupRemaining"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textColor="?attr/colorPrimary"
+                    android:textSize="12sp"
+                    android:visibility="gone"
+                    tools:text="2 sa 14 dk sonra" />
+            </LinearLayout>
 
             <com.google.android.material.switchmaterial.SwitchMaterial
                 android:id="@+id/switchGroupEnabled"

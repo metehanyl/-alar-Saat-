@@ -144,6 +144,18 @@ class SabahNamaziManager(private val context: Context) {
     }
 
     private suspend fun resolveTodaysImsak(): ImsakLookup {
+        // Always try fresh GPS-based lookup first so the city reflects current location.
+        // Only fall back to cache when the network/GPS call fails.
+        val freshResult = prayerRepository.refresh()
+        if (freshResult is RefreshResult.Success) {
+            val (day, isToday) = freshResult.bundle.todayOrClosest()
+            if (isToday) {
+                return parseImsak(day.imsak)?.let {
+                    ImsakLookup.Found(it, freshResult.bundle.sehirAdi, freshResult.bundle.ilceAdi)
+                } ?: ImsakLookup.NotFound("İmsak vakti okunamadı.")
+            }
+        }
+        // Fallback: use cached bundle if today's data is present there.
         val cached = prayerRepository.getCachedBundle()
         if (cached != null) {
             val (day, isToday) = cached.todayOrClosest()
@@ -153,18 +165,9 @@ class SabahNamaziManager(private val context: Context) {
                 } ?: ImsakLookup.NotFound("İmsak vakti okunamadı.")
             }
         }
-        return when (val result = prayerRepository.refresh()) {
-            is RefreshResult.Success -> {
-                val (day, isToday) = result.bundle.todayOrClosest()
-                if (!isToday) {
-                    ImsakLookup.NotFound("Bugünün İmsak vakti alınamadı.")
-                } else {
-                    parseImsak(day.imsak)?.let {
-                        ImsakLookup.Found(it, result.bundle.sehirAdi, result.bundle.ilceAdi)
-                    } ?: ImsakLookup.NotFound("İmsak vakti okunamadı.")
-                }
-            }
-            is RefreshResult.Failure -> ImsakLookup.NotFound(result.message)
+        return when (freshResult) {
+            is RefreshResult.Failure -> ImsakLookup.NotFound(freshResult.message)
+            else -> ImsakLookup.NotFound("Bugünün İmsak vakti alınamadı.")
         }
     }
 

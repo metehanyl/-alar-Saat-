@@ -45,6 +45,16 @@
                     android:textColor="?android:attr/textColorSecondary"
                     android:textSize="13sp"
                     tools:text="06:00 başlar, her 15 dk, 5 alarm" />
+
+                <TextView
+                    android:id="@+id/textIntervalGroupRemaining"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textColor="?attr/colorPrimary"
+                    android:textSize="12sp"
+                    android:visibility="gone"
+                    tools:text="2 sa 14 dk sonra" />
             </LinearLayout>
 
             <com.google.android.material.switchmaterial.SwitchMaterial

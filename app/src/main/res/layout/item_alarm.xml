@@ -35,6 +35,80 @@
         app:layout_constraintTop_toBottomOf="@id/textTime"
         tools:text="İş • Hafta içi" />
 
+    <LinearLayout
+        android:id="@+id/layoutDays"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        app:layout_constraintEnd_toStartOf="@id/switchEnabled"
+        app:layout_constraintStart_toStartOf="@id/textTime"
+        app:layout_constraintTop_toBottomOf="@id/textLabel">
+
+        <TextView
+            android:id="@+id/textDayMon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="5dp"
+            android:text="Pzt"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/textDayTue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="5dp"
+            android:text="Sal"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/textDayWed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="5dp"
+            android:text="Çar"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/textDayThu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="5dp"
+            android:text="Per"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/textDayFri"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="5dp"
+            android:text="Cum"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/textDaySat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="5dp"
+            android:text="Cmt"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/textDaySun"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Paz"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
     <TextView
         android:id="@+id/textRemaining"
         android:layout_width="0dp"
@@ -44,7 +118,7 @@
         android:textSize="13sp"
         app:layout_constraintEnd_toStartOf="@id/switchEnabled"
         app:layout_constraintStart_toStartOf="@id/textTime"
-        app:layout_constraintTop_toBottomOf="@id/textLabel"
+        app:layout_constraintTop_toBottomOf="@id/layoutDays"
         tools:text="2 sa 14 dk sonra" />
 
     <TextView

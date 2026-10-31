@@ -1,6 +1,7 @@
 package com.metehanyl.calarsaat.ui
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -9,6 +10,7 @@ import com.metehanyl.calarsaat.data.AlarmEntity
 import com.metehanyl.calarsaat.data.AlarmGroupEntity
 import com.metehanyl.calarsaat.databinding.ItemAlarmGroupBinding
 import com.metehanyl.calarsaat.util.DayUtils
+import com.metehanyl.calarsaat.util.TimeRemainingFormatter
 
 data class GroupWithAlarms(
     val group: AlarmGroupEntity,
@@ -39,6 +41,19 @@ class AlarmGroupAdapter(
             binding.textGroupName.text = "${item.group.name} • $repeatSummary"
             binding.textGroupTimes.text = item.alarms.sortedWith(compareBy({ it.hour }, { it.minute }))
                 .joinToString(", ") { "%02d:%02d".format(it.hour, it.minute) }
+
+            val enabledAlarms = item.alarms.filter { it.enabled }
+            if (enabledAlarms.isNotEmpty()) {
+                val nearest = enabledAlarms.minByOrNull {
+                    TimeRemainingFormatter.nextTriggerMillis(it.hour, it.minute, it.repeatDaysSet())
+                }!!
+                binding.textGroupRemaining.visibility = View.VISIBLE
+                binding.textGroupRemaining.text = TimeRemainingFormatter.format(
+                    binding.root.context, nearest.hour, nearest.minute, nearest.repeatDaysSet()
+                )
+            } else {
+                binding.textGroupRemaining.visibility = View.GONE
+            }
 
             binding.switchGroupEnabled.setOnCheckedChangeListener(null)
             binding.switchGroupEnabled.isChecked = item.alarms.isNotEmpty() && item.alarms.all { it.enabled }

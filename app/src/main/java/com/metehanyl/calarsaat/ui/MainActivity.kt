@@ -146,8 +146,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateSabahLocationText(sehirAdi: String, ilceAdi: String) {
-        val locationText = getString(R.string.sabah_location_format, sehirAdi, ilceAdi)
-        binding.textSabahLocation.text = locationText
+        val location = getString(R.string.sabah_location_format, sehirAdi, ilceAdi)
+        val source = getString(R.string.sabah_source_label)
+        binding.textSabahLocation.text = "$location  •  $source"
         binding.textSabahLocation.visibility = View.VISIBLE
     }
 
