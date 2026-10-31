@@ -1,7 +1,6 @@
 package com.metehanyl.calarsaat.prayer
 
 import android.content.Context
-import com.metehanyl.calarsaat.data.PrefsManager
 
 /**
  * GPS/ağ konumundan otomatik olarak il/ilçe çözümleyip Diyanet vakitlerini çeker ve
@@ -12,24 +11,13 @@ class PrayerRepository(private val context: Context) {
 
     private val cache = PrayerCache(context)
     private val locationProvider = DeviceLocationProvider(context)
-    private val prefs = PrefsManager(context)
 
     fun getCachedBundle(): PrayerBundle? = cache.load()
 
     fun hasLocationPermission(): Boolean = locationProvider.hasLocationPermission()
 
     suspend fun refresh(): RefreshResult {
-        // Her refresh'te yeni token al (45 dk ömürlü token'ın süresi dolmuş olabilir)
-        DiyanetApi.invalidateToken()
-        DiyanetApi.email = prefs.getDiyanetEmail()
-        DiyanetApi.password = prefs.getDiyanetPassword()
-
-        if (DiyanetApi.email.isBlank() || DiyanetApi.password.isBlank()) {
-            return RefreshResult.Failure(
-                "Diyanet API kimlik bilgileri eksik. Ayarlar > Diyanet API bölümünden " +
-                "e-posta ve şifreyi girin. Kayıt için: awqatsalah.diyanet.gov.tr"
-            )
-        }
+        DiyanetApi.init(context)
 
         val location = when (val lookup = resolveLocation()) {
             is LocationLookup.Success -> lookup.location
@@ -54,7 +42,7 @@ class PrayerRepository(private val context: Context) {
                 RefreshResult.Success(bundle)
             }
         } catch (e: Exception) {
-            RefreshResult.Failure("İnternete bağlanılamadı. Lütfen bağlantınızı kontrol edip tekrar deneyin.")
+            RefreshResult.Failure("İnternete bağlanılamadı veya Diyanet sitesi yanıt vermedi. Lütfen bağlantınızı kontrol edip tekrar deneyin.")
         }
     }
 
