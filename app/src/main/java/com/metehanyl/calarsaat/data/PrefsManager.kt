@@ -77,6 +77,12 @@ class PrefsManager(context: Context) {
         prefs.edit().putString(KEY_SABAH_TEXT_PASS_HASH, hash).apply()
     }
 
+    fun getDiyanetEmail(): String = prefs.getString(KEY_DIYANET_EMAIL, "").orEmpty()
+    fun setDiyanetEmail(email: String) = prefs.edit().putString(KEY_DIYANET_EMAIL, email).apply()
+
+    fun getDiyanetPassword(): String = prefs.getString(KEY_DIYANET_PASSWORD, "").orEmpty()
+    fun setDiyanetPassword(password: String) = prefs.edit().putString(KEY_DIYANET_PASSWORD, password).apply()
+
     fun isOemAutostartPromptShown(): Boolean = prefs.getBoolean(KEY_OEM_AUTOSTART_PROMPT_SHOWN, false)
 
     fun setOemAutostartPromptShown(shown: Boolean) {
@@ -101,6 +107,8 @@ class PrefsManager(context: Context) {
         private const val KEY_SABAH_LOCK_STEPS = "sabah_namazi_lock_steps"
         private const val KEY_SABAH_PATTERN_HASH = "sabah_namazi_pattern_hash"
         private const val KEY_SABAH_TEXT_PASS_HASH = "sabah_namazi_text_pass_hash"
+        private const val KEY_DIYANET_EMAIL = "diyanet_email"
+        private const val KEY_DIYANET_PASSWORD = "diyanet_password"
         private const val KEY_OEM_AUTOSTART_PROMPT_SHOWN = "oem_autostart_prompt_shown"
         private const val KEY_OVERLAY_PROMPT_SHOWN = "overlay_prompt_shown"
 

@@ -1,21 +1,36 @@
 package com.metehanyl.calarsaat.prayer
 
 import android.content.Context
+import com.metehanyl.calarsaat.data.PrefsManager
 
 /**
  * GPS/ağ konumundan otomatik olarak il/ilçe çözümleyip Diyanet vakitlerini çeker ve
- * diske kaydeder. Manuel şehir seçimi yok; konum izni verildiği sürece tamamen otomatik çalışır.
+ * diske kaydeder. Resmi Diyanet API (awqatsalah.diyanet.gov.tr) kullanır;
+ * kimlik bilgileri Ayarlar > Diyanet API bölümünden girilmelidir.
  */
 class PrayerRepository(private val context: Context) {
 
     private val cache = PrayerCache(context)
     private val locationProvider = DeviceLocationProvider(context)
+    private val prefs = PrefsManager(context)
 
     fun getCachedBundle(): PrayerBundle? = cache.load()
 
     fun hasLocationPermission(): Boolean = locationProvider.hasLocationPermission()
 
     suspend fun refresh(): RefreshResult {
+        // Her refresh'te yeni token al (45 dk ömürlü token'ın süresi dolmuş olabilir)
+        DiyanetApi.invalidateToken()
+        DiyanetApi.email = prefs.getDiyanetEmail()
+        DiyanetApi.password = prefs.getDiyanetPassword()
+
+        if (DiyanetApi.email.isBlank() || DiyanetApi.password.isBlank()) {
+            return RefreshResult.Failure(
+                "Diyanet API kimlik bilgileri eksik. Ayarlar > Diyanet API bölümünden " +
+                "e-posta ve şifreyi girin. Kayıt için: awqatsalah.diyanet.gov.tr"
+            )
+        }
+
         val location = when (val lookup = resolveLocation()) {
             is LocationLookup.Success -> lookup.location
             is LocationLookup.Failure ->

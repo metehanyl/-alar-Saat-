@@ -6,6 +6,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.metehanyl.calarsaat.R
 import com.metehanyl.calarsaat.data.PrefsManager
 import com.metehanyl.calarsaat.databinding.ActivitySettingsBinding
+import com.metehanyl.calarsaat.prayer.DiyanetApi
 import com.metehanyl.calarsaat.util.OemPermissionHelper
 
 class SettingsActivity : AppCompatActivity() {
@@ -23,6 +24,20 @@ class SettingsActivity : AppCompatActivity() {
         binding.buttonOemAutostart.setOnClickListener {
             OemPermissionHelper.openAutoStartSettings(this)
         }
+
+        // Kayıtlı kimlik bilgilerini göster (şifre hariç)
+        binding.editDiyanetEmail.setText(prefs.getDiyanetEmail())
+
+        binding.buttonSaveDiyanet.setOnClickListener { onSaveDiyanetClicked() }
+    }
+
+    private fun onSaveDiyanetClicked() {
+        val email = binding.editDiyanetEmail.text?.toString().orEmpty().trim()
+        val password = binding.editDiyanetPassword.text?.toString().orEmpty()
+        prefs.setDiyanetEmail(email)
+        prefs.setDiyanetPassword(password)
+        DiyanetApi.invalidateToken()
+        Snackbar.make(binding.root, R.string.settings_diyanet_saved, Snackbar.LENGTH_SHORT).show()
     }
 
     private fun onSavePinClicked() {

@@ -68,7 +68,13 @@
     <string name="sabah_namazi_subtitle">İmsak vaktine göre otomatik 3 alarm kurar</string>
     <string name="sabah_namazi_enabled_message">Sabah namazı alarmları kuruldu: %1$s • %2$s</string>
     <string name="sabah_location_format">%1$s / %2$s</string>
-    <string name="sabah_source_label">ezanvakti.emushaf.net</string>
+    <string name="sabah_source_label">awqatsalah.diyanet.gov.tr</string>
+    <string name="settings_diyanet_section_title">Diyanet API Kimlik Bilgileri</string>
+    <string name="settings_diyanet_info">Resmi Diyanet namaz vakitleri API\'sini kullanmak için awqatsalah.diyanet.gov.tr adresinden kayıt olup aldığınız e-posta ve şifreyi girin.</string>
+    <string name="settings_diyanet_email_hint">E-posta</string>
+    <string name="settings_diyanet_password_hint">Şifre</string>
+    <string name="settings_diyanet_save">Kaydet</string>
+    <string name="settings_diyanet_saved">Diyanet kimlik bilgileri kaydedildi</string>
     <string name="upcoming_alarm_notif_title">Sonraki Alarm</string>
     <string name="upcoming_alarm_channel_name">Yaklaşan Alarm</string>
     <string name="upcoming_alarm_channel_desc">Bir sonraki alarm saatini gösteren sabit bildirim</string>
