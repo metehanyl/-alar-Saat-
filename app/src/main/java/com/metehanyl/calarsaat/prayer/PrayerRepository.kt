@@ -79,8 +79,20 @@ class PrayerRepository(private val context: Context) {
     private suspend fun resolveCityAndDistrict(il: String, ilceCandidates: List<String>): LocationLookup {
         val ilKey = trKey(il)
         val cities = DiyanetApi.getCities()
-        val matchingCities = cities.filter { trKey(it.name) == ilKey }
+
+        // İl adıyla eşleştir; tam eşleşme yoksa kısmi dene, o da yoksa ilçe adaylarından il bul
+        var matchingCities = cities.filter { trKey(it.name) == ilKey }
             .ifEmpty { cities.filter { trKey(it.name).contains(ilKey) || ilKey.contains(trKey(it.name)) } }
+
+        if (matchingCities.isEmpty()) {
+            // GPS'ten il gelmemiş / tanınamıyorsa, ilçe adaylarından il tespiti dene
+            for (candidate in ilceCandidates) {
+                val candKey = trKey(candidate)
+                matchingCities = cities.filter { trKey(it.name) == candKey }
+                    .ifEmpty { cities.filter { trKey(it.name).contains(candKey) || candKey.contains(trKey(it.name)) } }
+                if (matchingCities.isNotEmpty()) break
+            }
+        }
 
         if (matchingCities.isEmpty()) return LocationLookup.Failure("şehir bulunamadı: $il")
 
@@ -106,17 +118,18 @@ class PrayerRepository(private val context: Context) {
             }
 
             // Eşleştirme önceliği (yukarıdan aşağıya):
-            // 1. GPS'ten gelen ilçe adlarıyla tam eşleşme
-            // 2. GPS'ten gelen ilçe adlarıyla kısmi eşleşme (içeren/içerilen)
-            // 3. Diyanet ilçesi == şehrin kendi adı (ör. "Trabzon" ilçesi)
-            // 4. "Merkez" adlı ilçe: bazı illerde merkez ilçe şehir adıyla değil
-            //    "Merkez" adıyla kayıtlıdır (ör. Kars → Merkez)
+            // 1. GPS ilçe adlarıyla tam eşleşme
+            // 2. GPS ilçe adlarıyla kısmi eşleşme (içeren/içerilen)
+            // 3. Diyanet ilçesi == şehrin kendi adı (ör. İstanbul/İstanbul, Trabzon/Trabzon)
+            // 4. Adında "Merkez" geçen ilçe (ör. Balıkesir/Merkez, Kars/Merkez İlçesi)
+            // 5. Son çare: listenin ilk ilçesi — konum eşleşmese bile boş dönme
             val district = candidateKeys.firstNotNullOfOrNull { key ->
                 districts.firstOrNull { trKey(it.name) == key }
             } ?: candidateKeys.firstNotNullOfOrNull { key ->
                 districts.firstOrNull { trKey(it.name).contains(key) || key.contains(trKey(it.name)) }
             } ?: districts.firstOrNull { trKey(it.name) == trKey(city.name) }
-              ?: districts.firstOrNull { trKey(it.name) == "MERKEZ" }
+              ?: districts.firstOrNull { trKey(it.name).contains("MERKEZ") }
+              ?: districts.firstOrNull()
 
             if (district != null) {
                 return LocationLookup.Success(
