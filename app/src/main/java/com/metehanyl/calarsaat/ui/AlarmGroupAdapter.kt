@@ -1,8 +1,11 @@
 package com.metehanyl.calarsaat.ui
 
+import android.graphics.Color
+import android.graphics.Paint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -11,6 +14,7 @@ import com.metehanyl.calarsaat.data.AlarmGroupEntity
 import com.metehanyl.calarsaat.databinding.ItemAlarmGroupBinding
 import com.metehanyl.calarsaat.util.DayUtils
 import com.metehanyl.calarsaat.util.TimeRemainingFormatter
+import java.util.Calendar
 
 data class GroupWithAlarms(
     val group: AlarmGroupEntity,
@@ -37,8 +41,28 @@ class AlarmGroupAdapter(
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: GroupWithAlarms) {
-            val repeatSummary = DayUtils.summarize(item.alarms.firstOrNull()?.repeatDaysSet() ?: emptySet())
+            val activeDays = item.alarms.firstOrNull()?.repeatDaysSet() ?: emptySet()
+            val repeatSummary = DayUtils.summarize(activeDays)
             binding.textGroupName.text = "${item.group.name} • $repeatSummary"
+
+            val dayViews = listOf(
+                Calendar.MONDAY to binding.textDayMon,
+                Calendar.TUESDAY to binding.textDayTue,
+                Calendar.WEDNESDAY to binding.textDayWed,
+                Calendar.THURSDAY to binding.textDayThu,
+                Calendar.FRIDAY to binding.textDayFri,
+                Calendar.SATURDAY to binding.textDaySat,
+                Calendar.SUNDAY to binding.textDaySun
+            )
+            for ((dayValue, tv) in dayViews) {
+                if (activeDays.isEmpty() || dayValue in activeDays) {
+                    tv.setTextColor(Color.parseColor("#4CAF50"))
+                    tv.paintFlags = tv.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+                } else {
+                    tv.setTextColor(Color.parseColor("#F44336"))
+                    tv.paintFlags = tv.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+                }
+            }
             binding.textGroupTimes.text = item.alarms.sortedWith(compareBy({ it.hour }, { it.minute }))
                 .joinToString(", ") { "%02d:%02d".format(it.hour, it.minute) }
 

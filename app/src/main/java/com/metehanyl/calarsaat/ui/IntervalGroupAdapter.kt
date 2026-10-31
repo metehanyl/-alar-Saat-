@@ -1,5 +1,7 @@
 package com.metehanyl.calarsaat.ui
 
+import android.graphics.Color
+import android.graphics.Paint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.metehanyl.calarsaat.data.IntervalAlarmGroupEntity
 import com.metehanyl.calarsaat.databinding.ItemIntervalGroupBinding
 import com.metehanyl.calarsaat.util.TimeRemainingFormatter
+import java.util.Calendar
 
 class IntervalGroupAdapter(
     private val onToggle: (IntervalAlarmGroupEntity, Boolean) -> Unit,
@@ -30,6 +33,26 @@ class IntervalGroupAdapter(
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: IntervalAlarmGroupEntity) {
+            val activeDays = item.repeatDaysSet()
+            val dayViews = listOf(
+                Calendar.MONDAY to binding.textDayMon,
+                Calendar.TUESDAY to binding.textDayTue,
+                Calendar.WEDNESDAY to binding.textDayWed,
+                Calendar.THURSDAY to binding.textDayThu,
+                Calendar.FRIDAY to binding.textDayFri,
+                Calendar.SATURDAY to binding.textDaySat,
+                Calendar.SUNDAY to binding.textDaySun
+            )
+            for ((dayValue, tv) in dayViews) {
+                if (activeDays.isEmpty() || dayValue in activeDays) {
+                    tv.setTextColor(Color.parseColor("#4CAF50"))
+                    tv.paintFlags = tv.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+                } else {
+                    tv.setTextColor(Color.parseColor("#F44336"))
+                    tv.paintFlags = tv.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+                }
+            }
+
             binding.textIntervalGroupName.text = item.name
             binding.textIntervalGroupDetail.text = binding.root.context.getString(
                 com.metehanyl.calarsaat.R.string.interval_group_detail,
