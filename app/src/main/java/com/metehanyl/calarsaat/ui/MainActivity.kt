@@ -1,6 +1,7 @@
 package com.metehanyl.calarsaat.ui
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -124,6 +125,7 @@ class MainActivity : AppCompatActivity() {
 
         requestNotificationPermissionIfNeeded()
         requestOemAutostartPermissionIfNeeded()
+        requestBatteryOptimizationExemptionIfNeeded()
         observeAlarms()
         observeGroups()
         observeIntervalGroups()
@@ -407,7 +409,7 @@ class MainActivity : AppCompatActivity() {
     private fun observeUpcomingAlarmNotification() {
         lifecycleScope.launch {
             dao.observeAll().collect { alarms ->
-                upcomingNotifier.update(alarms)
+                try { upcomingNotifier.update(alarms) } catch (_: Exception) { }
             }
         }
     }
@@ -541,6 +543,23 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+
+    private fun requestBatteryOptimizationExemptionIfNeeded() {
+        if (prefs.isBatteryOptimizationPromptShown()) return
+        val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
+        if (pm.isIgnoringBatteryOptimizations(packageName)) return
+        prefs.setBatteryOptimizationPromptShown(true)
+        AlertDialog.Builder(this)
+            .setTitle(R.string.battery_optimization_title)
+            .setMessage(R.string.battery_optimization_message)
+            .setPositiveButton(R.string.battery_optimization_action) { _, _ ->
+                startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = Uri.parse("package:$packageName")
+                })
+            }
+            .setNegativeButton(R.string.action_cancel, null)
+            .show()
+    }
 
     private fun requestFullScreenIntentPermissionIfNeeded() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) return

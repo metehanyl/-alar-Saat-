@@ -15,8 +15,10 @@ import kotlinx.coroutines.launch
 class UpcomingAlarmDismissReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         CoroutineScope(Dispatchers.IO).launch {
-            val alarms = AlarmDatabase.getInstance(context).alarmDao().getAll()
-            UpcomingAlarmNotifier(context).update(alarms)
+            try {
+                val alarms = AlarmDatabase.getInstance(context).alarmDao().getAll()
+                UpcomingAlarmNotifier(context).update(alarms)
+            } catch (_: Exception) { }
         }
     }
 }

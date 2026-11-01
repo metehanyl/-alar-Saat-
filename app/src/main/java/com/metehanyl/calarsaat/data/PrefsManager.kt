@@ -89,6 +89,12 @@ class PrefsManager(context: Context) {
         prefs.edit().putBoolean(KEY_OVERLAY_PROMPT_SHOWN, shown).apply()
     }
 
+    fun isBatteryOptimizationPromptShown(): Boolean = prefs.getBoolean(KEY_BATTERY_OPT_PROMPT_SHOWN, false)
+
+    fun setBatteryOptimizationPromptShown(shown: Boolean) {
+        prefs.edit().putBoolean(KEY_BATTERY_OPT_PROMPT_SHOWN, shown).apply()
+    }
+
     companion object {
         private const val KEY_PIN_HASH = "pin_hash"
         private const val KEY_SABAH_NAMAZI_ENABLED = "sabah_namazi_enabled"
@@ -103,6 +109,7 @@ class PrefsManager(context: Context) {
         private const val KEY_SABAH_TEXT_PASS_HASH = "sabah_namazi_text_pass_hash"
         private const val KEY_OEM_AUTOSTART_PROMPT_SHOWN = "oem_autostart_prompt_shown"
         private const val KEY_OVERLAY_PROMPT_SHOWN = "overlay_prompt_shown"
+        private const val KEY_BATTERY_OPT_PROMPT_SHOWN = "battery_opt_prompt_shown"
 
         // Default settings reproduce the original fixed behavior: imsak+10, +14, +18.
         const val DEFAULT_SABAH_COUNT = 3
