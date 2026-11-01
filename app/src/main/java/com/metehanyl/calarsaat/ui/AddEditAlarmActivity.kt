@@ -353,7 +353,7 @@ class AddEditAlarmActivity : AppCompatActivity() {
             label = label,
             repeatDays = AlarmEntity.daysToString(selectedDays),
             soundId = selectedSoundId(),
-            enabled = editingAlarm?.enabled ?: true,
+            enabled = true,
             requirePin = pinChecked,
             pinHash = pinHash,
             volume = selectedVolume(),
