@@ -180,18 +180,20 @@ class AddEditAlarmActivity : AppCompatActivity() {
                 text = label
                 isCheckable = true
                 isClickable = true
-                setTextColor(Color.WHITE)
-                applyChipColor(this, false)
+                isCheckedIconVisible = false
+                chipStrokeWidth = 0f
                 setOnCheckedChangeListener { _, checked -> applyChipColor(this, checked) }
             }
+            applyChipColor(chip, false)
             dayChips[dayValue] = chip
             binding.chipGroupDays.addView(chip)
         }
     }
 
     private fun applyChipColor(chip: Chip, checked: Boolean) {
-        val color = if (checked) Color.parseColor("#4CAF50") else Color.parseColor("#F44336")
-        chip.chipBackgroundColor = ColorStateList.valueOf(color)
+        val bg = if (checked) Color.parseColor("#4CAF50") else Color.parseColor("#F44336")
+        chip.chipBackgroundColor = ColorStateList.valueOf(bg)
+        chip.rippleColor = ColorStateList.valueOf(Color.TRANSPARENT)
         chip.setTextColor(Color.WHITE)
     }
 
