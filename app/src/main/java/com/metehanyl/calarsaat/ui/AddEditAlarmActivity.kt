@@ -1,5 +1,7 @@
 package com.metehanyl.calarsaat.ui
 
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Bundle
 import android.text.InputFilter
 import android.text.InputType
@@ -178,10 +180,19 @@ class AddEditAlarmActivity : AppCompatActivity() {
                 text = label
                 isCheckable = true
                 isClickable = true
+                setTextColor(Color.WHITE)
+                applyChipColor(this, false)
+                setOnCheckedChangeListener { _, checked -> applyChipColor(this, checked) }
             }
             dayChips[dayValue] = chip
             binding.chipGroupDays.addView(chip)
         }
+    }
+
+    private fun applyChipColor(chip: Chip, checked: Boolean) {
+        val color = if (checked) Color.parseColor("#4CAF50") else Color.parseColor("#F44336")
+        chip.chipBackgroundColor = ColorStateList.valueOf(color)
+        chip.setTextColor(Color.WHITE)
     }
 
     private fun setupMelodyOptions() {
@@ -256,6 +267,7 @@ class AddEditAlarmActivity : AppCompatActivity() {
         val days = alarm.repeatDaysSet()
         for ((dayValue, chip) in dayChips) {
             chip.isChecked = dayValue in days
+            applyChipColor(chip, chip.isChecked)
         }
         melodyButtons[alarm.soundId]?.isChecked = true
         binding.seekVolume.progress = alarm.volume
