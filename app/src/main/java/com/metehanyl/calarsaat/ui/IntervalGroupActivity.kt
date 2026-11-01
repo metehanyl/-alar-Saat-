@@ -374,6 +374,7 @@ class IntervalGroupActivity : AppCompatActivity() {
             repeatDays = repeatDays,
             soundId = selectedSoundId(),
             volume = selectedVolume(),
+            enabled = true,
             lockSteps = lockSteps,
             pinHash = pinHash,
             patternHash = patternHash,
