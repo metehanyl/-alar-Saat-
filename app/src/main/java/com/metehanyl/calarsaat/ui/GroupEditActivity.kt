@@ -1,5 +1,7 @@
 package com.metehanyl.calarsaat.ui
 
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Bundle
 import android.text.InputFilter
 import android.text.InputType
@@ -87,6 +89,7 @@ class GroupEditActivity : AppCompatActivity() {
                         val days = first.repeatDaysSet()
                         for ((dayValue, chip) in dayChips) {
                             chip.isChecked = dayValue in days
+                            applyChipColor(chip, chip.isChecked)
                         }
                         melodyButtons[first.soundId]?.isChecked = true
                         existingPinHash = first.pinHash
@@ -149,10 +152,21 @@ class GroupEditActivity : AppCompatActivity() {
                 text = label
                 isCheckable = true
                 isClickable = true
+                isCheckedIconVisible = false
+                chipStrokeWidth = 0f
+                setOnCheckedChangeListener { _, checked -> applyChipColor(this, checked) }
             }
+            applyChipColor(chip, false)
             dayChips[dayValue] = chip
             binding.chipGroupGroupDays.addView(chip)
         }
+    }
+
+    private fun applyChipColor(chip: Chip, checked: Boolean) {
+        val bg = if (checked) Color.parseColor("#4CAF50") else Color.parseColor("#F44336")
+        chip.chipBackgroundColor = ColorStateList.valueOf(bg)
+        chip.rippleColor = ColorStateList.valueOf(Color.TRANSPARENT)
+        chip.setTextColor(Color.WHITE)
     }
 
     private fun setupMelodyOptions() {
