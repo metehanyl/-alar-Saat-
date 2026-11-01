@@ -1,5 +1,7 @@
 package com.metehanyl.calarsaat.ui
 
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Bundle
 import android.text.InputFilter
 import android.text.InputType
@@ -91,10 +93,21 @@ class IntervalGroupActivity : AppCompatActivity() {
                 text = label
                 isCheckable = true
                 isClickable = true
+                isCheckedIconVisible = false
+                chipStrokeWidth = 0f
+                setOnCheckedChangeListener { _, checked -> applyChipColor(this, checked) }
             }
+            applyChipColor(chip, false)
             dayChips[dayValue] = chip
             binding.chipGroupDays.addView(chip)
         }
+    }
+
+    private fun applyChipColor(chip: Chip, checked: Boolean) {
+        val bg = if (checked) Color.parseColor("#4CAF50") else Color.parseColor("#F44336")
+        chip.chipBackgroundColor = ColorStateList.valueOf(bg)
+        chip.rippleColor = ColorStateList.valueOf(Color.TRANSPARENT)
+        chip.setTextColor(Color.WHITE)
     }
 
     private fun setupMelodyOptions() {
@@ -254,6 +267,7 @@ class IntervalGroupActivity : AppCompatActivity() {
         val days = group.repeatDaysSet()
         for ((dayValue, chip) in dayChips) {
             chip.isChecked = dayValue in days
+            applyChipColor(chip, chip.isChecked)
         }
         melodyButtons[group.soundId]?.isChecked = true
         binding.seekVolume.progress = group.volume
@@ -393,10 +407,12 @@ class IntervalGroupActivity : AppCompatActivity() {
                     repeatDays = repeatDays,
                     soundId = selectedSoundId(),
                     volume = selectedVolume(),
+                    enabled = true,
                     intervalGroupId = savedGroupId,
                     requirePin = pinChecked,
                     pinHash = pinHash,
                     patternHash = patternHash,
+                    lockType = lockSteps.split(",").firstOrNull() ?: "",
                     textPassHash = textPassHash,
                     lockSteps = lockSteps
                 )
