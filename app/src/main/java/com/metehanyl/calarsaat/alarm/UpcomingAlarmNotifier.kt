@@ -44,7 +44,17 @@ class UpcomingAlarmNotifier(private val context: Context) {
         val (alarm, triggerMs) = next
         val cal = Calendar.getInstance().apply { timeInMillis = triggerMs }
         val timeStr = "%02d:%02d".format(cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE))
-        val contentText = if (alarm.label.isNotBlank()) "$timeStr · ${alarm.label}" else timeStr
+        val totalMinutes = ((triggerMs - now) / 60_000L).coerceAtLeast(0)
+        val hours = totalMinutes / 60
+        val minutes = totalMinutes % 60
+        val remainingStr = if (hours > 0)
+            context.getString(R.string.time_remaining_hours_minutes, hours, minutes)
+        else
+            context.getString(R.string.time_remaining_minutes, minutes)
+        val contentText = if (alarm.label.isNotBlank())
+            "$timeStr · ${alarm.label} · $remainingStr"
+        else
+            "$timeStr · $remainingStr"
 
         val openPi = PendingIntent.getActivity(
             context, 0,
